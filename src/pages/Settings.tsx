@@ -143,7 +143,7 @@ const Settings = () => {
                 </AvatarFallback>
               </Avatar>
               <div className="space-y-2">
-                <Button variant="outline" size="sm" onClick={handleAvatarClick} disabled={loading} className="bg-slate-500 hover:bg-slate-400">
+                <Button variant="outline" size="sm" onClick={handleAvatarClick} disabled={loading} >
                   Change Avatar
                 </Button>
                 <input
@@ -165,7 +165,7 @@ const Settings = () => {
                 <Input id="name" value={profileData.name} onChange={e => setProfileData(prev => ({
                 ...prev,
                 name: e.target.value
-              }))} placeholder="Enter your name" className="bg-[hsl(var(--panel))] bg-slate-500" />
+              }))} placeholder="Enter your name" className="bg-[hsl(var(--field))]" />
               </div>
 
               <div className="space-y-2">
@@ -173,7 +173,7 @@ const Settings = () => {
                 <Input id="area" value={profileData.area} onChange={e => setProfileData(prev => ({
                 ...prev,
                 area: e.target.value
-              }))} placeholder="Enter your work area" className="bg-[hsl(var(--panel))] bg-slate-500" />
+              }))} placeholder="Enter your work area" className="bg-[hsl(var(--field))]" />
               </div>
             </div>
 
@@ -256,7 +256,7 @@ const Settings = () => {
               <Switch checked={notifications.email} onCheckedChange={checked => setNotifications(prev => ({
               ...prev,
               email: checked
-            }))} className="text-slate-200 bg-slate-800 hover:bg-slate-700" />
+            }))}  />
             </div>
 
             <Separator />
@@ -271,7 +271,7 @@ const Settings = () => {
               <Switch checked={notifications.desktop} onCheckedChange={checked => setNotifications(prev => ({
               ...prev,
               desktop: checked
-            }))} className="text-slate-200 bg-slate-800 hover:bg-slate-700" />
+            }))}  />
             </div>
 
             <Separator />
@@ -286,7 +286,7 @@ const Settings = () => {
               <Switch checked={notifications.taskReminders} onCheckedChange={checked => setNotifications(prev => ({
               ...prev,
               taskReminders: checked
-            }))} className="text-slate-200 bg-slate-800 hover:bg-slate-700" />
+            }))}  />
             </div>
 
             <Separator />
@@ -301,7 +301,7 @@ const Settings = () => {
               <Switch checked={notifications.absenceUpdates} onCheckedChange={checked => setNotifications(prev => ({
               ...prev,
               absenceUpdates: checked
-            }))} className="text-slate-200 bg-slate-800 hover:bg-slate-700" />
+            }))}  />
             </div>
           </CardContent>
         </Card>
@@ -325,7 +325,7 @@ const Settings = () => {
                   Update your account password
                 </p>
               </div>
-               <Button variant="outline" size="sm" className="bg-slate-600 hover:bg-slate-500">
+               <Button variant="outline" size="sm" >
                 Change Password
               </Button>
             </div>
@@ -339,7 +339,7 @@ const Settings = () => {
                   Add an extra layer of security to your account
                 </p>
               </div>
-              <Button variant="outline" size="sm" className="bg-slate-600 hover:bg-slate-500">
+              <Button variant="outline" size="sm" >
                 Enable 2FA
               </Button>
             </div>

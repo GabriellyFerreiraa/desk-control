@@ -56,7 +56,7 @@ const ThemedWrapper = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const isPublic = location.pathname === '/' || location.pathname === '/auth';
   return (
-    <div className={`${isPublic ? 'landing-theme ' : ''}min-h-screen relative`}>
+    <div className={`${isPublic ? 'landing-theme force-light ' : ''}min-h-screen relative`}>
       {children}
     </div>
   );

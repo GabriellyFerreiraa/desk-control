@@ -11,7 +11,7 @@ const Index = () => {
       root.classList.remove('force-dark');
     };
   }, []);
-  return <div className="min-h-screen bg-background landing-theme">
+  return <div className="min-h-screen bg-background landing-theme force-light">
       {/* Hero Section */}
       <div className="relative">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/5 to-background" />

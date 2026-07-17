@@ -125,6 +125,31 @@ Design direction: Supabase-inspired, clean surfaces, subtle borders, emerald acc
     background-image: radial-gradient(900px 500px at 50% 0%, hsl(var(--primary) / 0.06), transparent 60%);
     background-color: hsl(var(--background));
   }
+
+  /* Forces the light palette regardless of the global dark mode setting.
+     Used on public pages (login, sign up, home) that should always look light,
+     even while the Dashboard itself is in dark mode. */
+  .force-light {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 9%;
+    --card: 0 0% 98%;
+    --card-foreground: 0 0% 9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 9%;
+    --primary: 160 84% 39%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 160 84% 39%;
+    --accent-foreground: 0 0% 100%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 160 84% 39%;
+    --panel: 0 0% 98%;
+    --field: 0 0% 100%;
+  }
 }
 
 /* Global Scrollbar Styling (uses semantic HSL tokens) */
