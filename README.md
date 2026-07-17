@@ -2,7 +2,7 @@
 
 Operational management application for Service Desk teams — shift scheduling, absence requests (with approval and cancellation flows), and task assignments for Leads and Analysts.
 
-🔗 **Live demo:** [add the link here after deploying]
+🔗 **Live demo:** [https://tranquil-syrniki-a20c8e.netlify.app/]
 
 ![Project screenshot](public/screenshot.png)
 <!-- Replace with a real screenshot of the dashboard -->
