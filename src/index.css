@@ -124,6 +124,7 @@ Design direction: Supabase-inspired, clean surfaces, subtle borders, emerald acc
   .landing-theme {
     background-image: radial-gradient(900px 500px at 50% 0%, hsl(var(--primary) / 0.06), transparent 60%);
     background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 
   /* Forces the light palette regardless of the global dark mode setting.
