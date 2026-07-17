@@ -48,16 +48,20 @@ Built with **React + TypeScript**, **Tailwind CSS + shadcn/ui**, **React Router*
 ```
 src/
  ├─ components/
- │   ├─ dashboards/         # LeadDashboard, AnalystDashboard
+ │   ├─ dashboard/          # LeadDashboard, AnalystDashboard
  │   ├─ forms/              # Absence, Shift, Task forms
  │   ├─ modals/             # Approval and cancellation modals
- │   ├─ ui/                 # shadcn/ui component wrappers
- │   └─ ...
- ├─ context/                # Global contexts (auth, etc.)
- ├─ lib/                    # Helpers and Supabase client
- ├─ types/                  # Domain models & enums
+ │   ├─ calendar/           # Team calendar view
+ │   ├─ background/         # Visual effects
+ │   └─ ui/                 # shadcn/ui component wrappers
+ ├─ hooks/                  # useAuth, use-toast, use-mobile
+ ├─ integrations/supabase/  # Supabase client & generated types
+ ├─ pages/                  # Route-level pages (Auth, Dashboard, Settings...)
+ ├─ lib/                    # Helpers
  ├─ App.tsx                 # Routes
  ├─ main.tsx                # App entry point
+supabase/
+ └─ migrations/             # Database schema & RLS policy history
 ```
 
 ---
@@ -66,7 +70,7 @@ src/
 
 **1. Clone the repository**
 ```bash
-git clone <repo-url>
+git clone https://github.com/GabriellyFerreiraa/desk-control.git
 cd desk-control
 ```
 
