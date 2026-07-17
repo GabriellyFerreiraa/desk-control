@@ -4,128 +4,110 @@
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
+Design direction: Supabase-inspired, clean surfaces, subtle borders, emerald accent.
 */
 
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 0 0% 9%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 0 0% 98%;
+    --card-foreground: 0 0% 9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 0 0% 9%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 160 84% 39%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 9%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 160 84% 39%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --success: 142 71% 35%;
-    --success-foreground: 210 40% 98%;
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
 
     --warning: 28 90% 55%;
     --warning-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 160 84% 39%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 0 0% 30%;
+    --sidebar-primary: 160 84% 39%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 96%;
+    --sidebar-accent-foreground: 0 0% 9%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 160 84% 39%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-
-    /* Surface for navbars/cards: dark=slate-900, light=slate-300 */
-    --panel: 214.3 31.8% 91.4%;
+    /* Surface for navbars/cards */
+    --panel: 0 0% 98%;
     /* Form field surface token */
-    --field: 214.3 31.8% 91.4%;
+    --field: 0 0% 100%;
   }
 
   .dark, .force-dark {
-    /* Brand tokens for dark theme */
-    --brand-navy: 240 58% 15%; /* #10103D approx */
-    --brand-violet: 262 83% 49%; /* #6D28D9 */
-    --brand-magenta: 322 100% 34%; /* #A1006B approx */
-    --brand-electric: 197 100% 47%; /* #00B0F0 */
-    --brand-cyan: 201 100% 62%; /* #3DC1FF */
-    --brand-hi1: 64 90% 66%;  /* #F0F758 */
-    --brand-hi2: 160 61% 77%; /* #A5E8D1 */
-    --brand-hi3: 266 64% 61%; /* #9A5BDF */
+    --background: 0 0% 9%;
+    --foreground: 0 0% 96%;
 
-    /* Global dark theme surfaces */
-    --background: var(--brand-navy);
-    --foreground: 210 40% 98%;
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 96%;
 
-    --card: var(--secondary);
-    --card-foreground: 210 40% 98%;
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 96%;
 
-    --popover: var(--secondary);
-    --popover-foreground: 210 40% 98%;
+    --primary: 158 64% 52%;
+    --primary-foreground: 160 84% 10%;
 
-    /* Keep existing semantic roles */
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 0 0% 16%;
+    --secondary-foreground: 0 0% 96%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --muted: 0 0% 16%;
+    --muted-foreground: 0 0% 65%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 158 64% 52%;
+    --accent-foreground: 160 84% 10%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --success: 142 71% 35%;
-    --success-foreground: 210 40% 98%;
+    --success: 158 64% 52%;
+    --success-foreground: 160 84% 10%;
 
     --warning: 28 90% 55%;
     --warning-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 158 64% 52%;
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 0 0% 11%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 158 64% 52%;
+    --sidebar-primary-foreground: 160 84% 10%;
+    --sidebar-accent: 0 0% 16%;
+    --sidebar-accent-foreground: 0 0% 96%;
+    --sidebar-border: 0 0% 18%;
+    --sidebar-ring: 158 64% 52%;
 
-    /* Panel surface for dark theme (slate-900) */
-    --panel: 222.2 47.4% 11.2%;
-    /* Form field surface for dark theme (slate-800) */
-    --field: 215 27.9% 16.9%;
+    /* Panel surface for dark theme */
+    --panel: 0 0% 12%;
+    /* Form field surface for dark theme */
+    --field: 0 0% 15%;
   }
 }
 
@@ -136,58 +118,12 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
-
-    /* Global animated brand gradient background */
-    --brand-navy: 240 58% 15%; /* #10103D approx */
-    --brand-violet: 262 83% 49%; /* #6D28D9 */
-    --brand-magenta: 322 100% 34%; /* #A1006B approx */
-    --brand-electric: 197 100% 47%; /* #00B0F0 */
-    --brand-cyan: 201 100% 62%; /* #3DC1FF */
-    --brand-hi1: 64 90% 66%;  /* #F0F758 */
-    --brand-hi2: 160 61% 77%; /* #A5E8D1 */
-    --brand-hi3: 266 64% 61%; /* #9A5BDF */
-
-    background-image:
-      radial-gradient(1200px 600px at 10% 20%, hsl(var(--brand-violet) / 0.25), transparent 60%),
-      radial-gradient(1000px 500px at 90% 30%, hsl(var(--brand-magenta) / 0.18), transparent 60%),
-      radial-gradient(900px 900px at 50% 80%, hsl(var(--brand-electric) / 0.12), transparent 60%),
-      linear-gradient(135deg, hsl(var(--brand-hi1) / 0.12), hsl(var(--brand-hi2) / 0.10), hsl(var(--brand-hi3) / 0.12)),
-      linear-gradient(180deg, hsl(var(--brand-navy)), hsl(var(--brand-navy)));
-    background-size: 200% 200%;
-    background-attachment: fixed;
-    animation: brand-gradient-shift 24s ease-in-out infinite alternate;
   }
 
-  /* Cognizant-inspired landing/auth theme with subtle animated gradient */
+  /* Clean landing/auth surface: flat background, one soft accent glow, no animation */
   .landing-theme {
-    /* Brand tokens (HSL) */
-    --brand-navy: 240 58% 15%; /* #10103D approx */
-    --brand-violet: 262 83% 49%; /* #6D28D9 */
-    --brand-magenta: 322 100% 34%; /* #A1006B approx */
-    --brand-electric: 197 100% 47%; /* #00B0F0 */
-    --brand-cyan: 201 100% 62%; /* #3DC1FF */
-
-    /* Gradient highlight stops */
-    --brand-hi1: 64 90% 66%;  /* #F0F758 */
-    --brand-hi2: 160 61% 77%; /* #A5E8D1 */
-    --brand-hi3: 266 64% 61%; /* #9A5BDF */
-
-    /* Keep deep navy inside divisions/cards/popovers */
-    --background: var(--brand-navy);
-    --card: var(--secondary);
-    --card-foreground: 0 0% 100%;
-    --popover: var(--secondary);
-    --popover-foreground: 0 0% 100%;
-
-    /* Subtle animated gradient background */
-    background-image:
-      radial-gradient(1200px 600px at 10% 20%, hsl(var(--brand-violet) / 0.25), transparent 60%),
-      radial-gradient(1000px 500px at 90% 30%, hsl(var(--brand-magenta) / 0.18), transparent 60%),
-      radial-gradient(900px 900px at 50% 80%, hsl(var(--brand-electric) / 0.12), transparent 60%),
-      linear-gradient(135deg, hsl(var(--brand-hi1) / 0.12), hsl(var(--brand-hi2) / 0.10), hsl(var(--brand-hi3) / 0.12)),
-      linear-gradient(180deg, hsl(var(--brand-navy)), hsl(var(--brand-navy)));
-    background-size: 200% 200%;
-    animation: brand-gradient-shift 24s ease-in-out infinite alternate;
+    background-image: radial-gradient(900px 500px at 50% 0%, hsl(var(--primary) / 0.06), transparent 60%);
+    background-color: hsl(var(--background));
   }
 }
 
@@ -201,47 +137,4 @@ All colors MUST be HSL.
   ::-webkit-scrollbar-track { background: hsl(var(--secondary)); }
   ::-webkit-scrollbar-thumb { background-color: hsl(var(--muted-foreground) / 0.5); border-radius: 9999px; border: 2px solid hsl(var(--secondary)); }
   ::-webkit-scrollbar-thumb:hover { background-color: hsl(var(--muted-foreground) / 0.7); }
-}
-
-/* Interactive mouse-follow background overlays */
-@layer components {
-  .interactive-bg { /* container only */ }
-
-  .interactive-bg .mouse-blur {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    /* Only blur near cursor using a mask */
-    backdrop-filter: blur(10px) saturate(110%);
-    -webkit-backdrop-filter: blur(10px) saturate(110%);
-    /* Mask to limit the blur region */
-    mask-image: radial-gradient(180px 180px at var(--x, -1000px) var(--y, -1000px), rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 45%, rgba(0,0,0,0.3) 60%, transparent 70%);
-    -webkit-mask-image: radial-gradient(180px 180px at var(--x, -1000px) var(--y, -1000px), rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 45%, rgba(0,0,0,0.3) 60%, transparent 70%);
-  }
-
-  .interactive-bg .mouse-color {
-    position: fixed;
-    left: var(--x, -1000px);
-    top: var(--y, -1000px);
-    width: 360px;
-    height: 360px;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    filter: blur(32px) saturate(120%);
-    will-change: transform, opacity;
-    background: radial-gradient(
-      circle at center,
-      hsl(var(--brand-hi1) / 0.22) 0%,
-      hsl(var(--brand-hi2) / 0.18) 35%,
-      hsl(var(--brand-hi3) / 0.22) 60%,
-      transparent 75%
-    );
-    mix-blend-mode: screen;
-  }
-}
-
-@keyframes brand-gradient-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
 }
