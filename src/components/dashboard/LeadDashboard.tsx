@@ -135,7 +135,7 @@ export const LeadDashboard = () => {
     try {
       const { error } = await supabase
         .from('absence_requests')
-        .update({ status: 'cancelled', canceled_at: new Date().toISOString(), lead_comment: comment })
+        .update({ status: 'cancelled', lead_comment: comment })
         .eq('id', requestId);
       if (error) throw error;
       toast({ title: 'Cancellation approved', description: 'The absence has been canceled.' });

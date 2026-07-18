@@ -144,7 +144,7 @@ export const AnalystDashboard = () => {
     try {
       const { error } = await supabase
         .from('absence_requests')
-        .update({ status: 'cancelled', canceled_at: new Date().toISOString() })
+        .update({ status: 'cancelled' })
         .eq('id', requestId)
         .eq('status', 'pending');
       if (error) throw error;
