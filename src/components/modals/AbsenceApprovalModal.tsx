@@ -89,6 +89,11 @@ export const AbsenceApprovalModal = ({
               <Label className="text-muted-foreground">Reason</Label>
               <p className="mt-1 p-3 bg-muted rounded text-sm">{request.reason}</p>
             </div>
+
+            {isCancel && <div>
+                <Label className="text-muted-foreground">Cancellation reason (from analyst)</Label>
+                <p className="mt-1 p-3 bg-muted rounded text-sm">{request.cancel_reason || 'No reason provided'}</p>
+              </div>}
             
             <div className="text-xs text-muted-foreground">
               Requested on {format(new Date(request.created_at), 'PPp', {
