@@ -414,8 +414,8 @@ export const LeadDashboard = () => {
             <CardContent>
               {myProfile ? <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="text-sm text-muted-foreground">
-                    <p>Schedule: {myProfile.start_time} - {myProfile.end_time}</p>
-                    <p>Lunch: {myProfile.lunch_start} - {myProfile.lunch_end}</p>
+                    <p>Schedule: {String(myProfile.start_time).slice(0, 5)} - {String(myProfile.end_time).slice(0, 5)}</p>
+                    <p>Lunch: {myProfile.lunch_start ? String(myProfile.lunch_start).slice(0, 5) : '—'} - {myProfile.lunch_end ? String(myProfile.lunch_end).slice(0, 5) : '—'}</p>
                   </div>
                   <Button size="sm" variant="outline" onClick={() => setSelectedAnalyst(myProfile)}>
                     Edit My Schedule
@@ -453,7 +453,7 @@ export const LeadDashboard = () => {
                          </div>
                        </div>
                        {todaySchedule?.active && <div className="text-sm text-muted-foreground mb-3">
-                           <p>Schedule: {analyst.start_time} - {analyst.end_time}</p>
+                           <p>Schedule: {String(analyst.start_time).slice(0, 5)} - {String(analyst.end_time).slice(0, 5)}</p>
                            <p>Mode: {todaySchedule.mode === 'home' ? 'Home' : 'Office'}</p>
                          </div>}
                        {!todaySchedule?.active && <div className="text-sm text-muted-foreground mb-3">
