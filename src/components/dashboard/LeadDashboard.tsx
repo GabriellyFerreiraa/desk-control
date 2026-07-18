@@ -20,6 +20,7 @@ export const LeadDashboard = () => {
   const [pendingRequests, setPendingRequests] = useState([]);
   const [allTasks, setAllTasks] = useState([]);
   const [analysts, setAnalysts] = useState([]);
+  const [myProfile, setMyProfile] = useState(null);
   const [approvedAbsences, setApprovedAbsences] = useState([]);
   const [processedRequests, setProcessedRequests] = useState([]);
   const [showTaskForm, setShowTaskForm] = useState(false);
@@ -61,11 +62,17 @@ export const LeadDashboard = () => {
       const {
         data: allAnalysts
       } = await supabase.from('profiles').select('*').eq('role', 'analyst');
+
+      // Fetch the lead's own profile (for self-service shift editing)
+      const {
+        data: ownProfile
+      } = await supabase.from('profiles').select('*').eq('user_id', user.id).single();
       setPendingRequests(requests || []);
       setProcessedRequests(processed || []);
       setApprovedAbsences(absences || []);
       setAllTasks(tasks || []);
       setAnalysts(allAnalysts || []);
+      setMyProfile(ownProfile || null);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({
@@ -399,6 +406,26 @@ export const LeadDashboard = () => {
         <TabsContent value="team" className="space-y-4">
           <Card>
             <CardHeader>
+              <CardTitle>My Shift</CardTitle>
+              <CardDescription>
+                Your own work schedule
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {myProfile ? <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="text-sm text-muted-foreground">
+                    <p>Schedule: {myProfile.start_time} - {myProfile.end_time}</p>
+                    <p>Lunch: {myProfile.lunch_start} - {myProfile.lunch_end}</p>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={() => setSelectedAnalyst(myProfile)}>
+                    Edit My Schedule
+                  </Button>
+                </div> : <p className="text-sm text-muted-foreground">Loading your schedule...</p>}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
               <CardTitle>Team Status</CardTitle>
               <CardDescription>
                 General view of the analyst team
@@ -414,7 +441,7 @@ export const LeadDashboard = () => {
                 const todaySchedule = analyst.work_days?.[today];
                 return <div key={analyst.id} className={`group p-5 md:p-6 border rounded-xl bg-card shadow-sm transition-colors hover:border-primary/30 ${!isOnline ? '' : ''}`}>
                        <div className="flex items-center gap-3 mb-4">
-                         <div className={`h-3.5 w-3.5 rounded-full ring-2 ring-background ${isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+                         <div className={`h-3.5 w-3.5 rounded-full ring-2 ring-background ${isOnline ? 'bg-green-500' : 'bg-muted-foreground/40'}`} />
                          <div className="flex items-center gap-2">
                            <UserAvatar src={analyst.avatar_url} name={analyst.name} size="sm" />
                            <div>
@@ -433,7 +460,7 @@ export const LeadDashboard = () => {
                            <p>Not scheduled today</p>
                          </div>}
                         <div className="space-y-2">
-                          <Button size="sm" variant="outline" onClick={() => setSelectedAnalyst(analyst)} className="w-full bg-slate-600 hover:bg-slate-600 ">
+                          <Button size="sm" variant="outline" onClick={() => setSelectedAnalyst(analyst)} className="w-full">
                             Edit Schedule
                           </Button>
                           <Button size="sm" variant="destructive" onClick={() => deleteAnalyst(analyst.user_id, analyst.name)} className="w-full">
