@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -19,8 +18,7 @@ const loginSchema = z.object({
 const signupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  role: z.enum(['analyst', 'lead'])
+  password: z.string().min(6, 'Password must be at least 6 characters')
 });
 type LoginForm = z.infer<typeof loginSchema>;
 type SignupForm = z.infer<typeof signupSchema>;
@@ -43,8 +41,7 @@ const Auth = () => {
     defaultValues: {
       name: '',
       email: '',
-      password: '',
-      role: 'analyst'
+      password: ''
     }
   });
   const onLogin = async (data: LoginForm) => {
@@ -68,8 +65,7 @@ const Auth = () => {
       const {
         error
       } = await signUp(data.email, data.password, {
-        name: data.name,
-        role: data.role
+        name: data.name
       });
       if (!error) {
         toast({
@@ -163,22 +159,6 @@ const Auth = () => {
                   </div>
                   {signupForm.formState.errors.password && <p className="text-sm text-destructive">
                       {signupForm.formState.errors.password.message}
-                    </p>}
-                </div>
-                
-                 <div className="space-y-2">
-                  <Label htmlFor="signup-role">Role</Label>
-                  <Select onValueChange={value => signupForm.setValue('role', value as 'analyst' | 'lead')}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select your role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="analyst">Analyst</SelectItem>
-                      <SelectItem value="lead">Lead</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {signupForm.formState.errors.role && <p className="text-sm text-destructive">
-                      {signupForm.formState.errors.role.message}
                     </p>}
                 </div>
                 
