@@ -84,7 +84,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signUp = async (email: string, password: string, userData: any = {}) => {
     const redirectUrl = `${window.location.origin}/`;
-    
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -93,11 +93,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         data: userData
       }
     });
-    
+
     if (error) {
+      // Supabase's own message ("User already registered") lets an
+      // attacker enumerate which emails have accounts. Keep other
+      // validation errors (weak password, invalid email) as-is since
+      // those don't reveal anything about existing accounts.
+      const revealsAccountExistence = /already registered|already exists/i.test(error.message);
       toast({
         title: "Registration error",
-        description: error.message,
+        description: revealsAccountExistence
+          ? "If this email can be registered, check your inbox to confirm your account."
+          : error.message,
         variant: "destructive"
       });
     } else {
@@ -106,7 +113,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         description: "Check your email to confirm your account"
       });
     }
-    
+
     return { error };
   };
 

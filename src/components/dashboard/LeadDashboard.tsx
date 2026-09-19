@@ -31,42 +31,38 @@ export const LeadDashboard = () => {
   const fetchData = async () => {
     if (!user) return;
     try {
-      // Fetch pending absence requests
-      const {
-        data: requests
-      } = await supabase.from('absence_requests').select('*, analyst_profile:profiles!absence_requests_analyst_id_fkey(name, avatar_url)').in('status', ['pending', 'cancel_requested']).order('created_at', {
-        ascending: false
-      });
-
-      // Fetch processed (non-pending) absence requests
-      const {
-        data: processed
-      } = await supabase.from('absence_requests').select('*, analyst_profile:profiles!absence_requests_analyst_id_fkey(name, avatar_url)').in('status', ['approved', 'rejected', 'cancelled']).order('updated_at', {
-        ascending: false
-      });
-
-      // Fetch approved absences for today
       const today = new Date().toISOString().split('T')[0];
-      const {
-        data: absences
-      } = await supabase.from('absence_requests').select('*').eq('status', 'approved').lte('start_date', today).gte('end_date', today);
+      const [
+        { data: requests, error: requestsError },
+        { data: processed, error: processedError },
+        { data: absences, error: absencesError },
+        { data: tasks, error: tasksError },
+        { data: allAnalysts, error: analystsError },
+        { data: ownProfile, error: ownProfileError }
+      ] = await Promise.all([
+        // Pending absence requests
+        supabase.from('absence_requests').select('*, analyst_profile:profiles!absence_requests_analyst_id_fkey(name, avatar_url)').in('status', ['pending', 'cancel_requested']).order('created_at', {
+          ascending: false
+        }),
+        // Processed (non-pending) absence requests
+        supabase.from('absence_requests').select('*, analyst_profile:profiles!absence_requests_analyst_id_fkey(name, avatar_url)').in('status', ['approved', 'rejected', 'cancelled']).order('updated_at', {
+          ascending: false
+        }),
+        // Approved absences for today
+        supabase.from('absence_requests').select('*').eq('status', 'approved').lte('start_date', today).gte('end_date', today),
+        // All tasks
+        supabase.from('tasks').select('*, assigned_to_profile:profiles!tasks_assigned_to_fkey(name, avatar_url)').order('created_at', {
+          ascending: false
+        }),
+        // All analysts
+        supabase.from('profiles').select('*').eq('role', 'analyst'),
+        // The lead's own profile (for self-service shift editing)
+        supabase.from('profiles').select('*').eq('user_id', user.id).single()
+      ]);
 
-      // Fetch all tasks
-      const {
-        data: tasks
-      } = await supabase.from('tasks').select('*, assigned_to_profile:profiles!tasks_assigned_to_fkey(name, avatar_url)').order('created_at', {
-        ascending: false
-      });
+      const firstError = requestsError || processedError || absencesError || tasksError || analystsError || ownProfileError;
+      if (firstError) throw firstError;
 
-      // Fetch all analysts
-      const {
-        data: allAnalysts
-      } = await supabase.from('profiles').select('*').eq('role', 'analyst');
-
-      // Fetch the lead's own profile (for self-service shift editing)
-      const {
-        data: ownProfile
-      } = await supabase.from('profiles').select('*').eq('user_id', user.id).single();
       setPendingRequests(requests || []);
       setProcessedRequests(processed || []);
       setApprovedAbsences(absences || []);
@@ -164,11 +160,10 @@ export const LeadDashboard = () => {
       return;
     }
     try {
-      // Delete all related data first
-      await supabase.from('tasks').delete().eq('assigned_to', analystId);
-      await supabase.from('absence_requests').delete().eq('analyst_id', analystId);
-
-      // Finally delete the profile
+      // tasks.assigned_to and absence_requests.analyst_id both have
+      // ON DELETE CASCADE to profiles.user_id, so deleting the profile
+      // row alone removes their tasks/absence requests atomically —
+      // no need for separate client-side delete calls.
       const {
         error
       } = await supabase.from('profiles').delete().eq('user_id', analystId);

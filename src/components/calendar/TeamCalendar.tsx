@@ -53,24 +53,20 @@ export const TeamCalendar = ({
   const fetchData = async () => {
     if (!user) return;
     try {
-      // Fetch absence requests
-      const {
-        data: absenceData,
-        error: absenceError
-      } = await supabase.from('absence_requests').select('*, analyst_profile:profiles!absence_requests_analyst_id_fkey(name, avatar_url)').eq('status', 'approved').order('start_date', {
-        ascending: true
-      });
+      const [
+        { data: absenceData, error: absenceError },
+        { data: analystData, error: analystError }
+      ] = await Promise.all([
+        supabase.from('absence_requests').select('*, analyst_profile:profiles!absence_requests_analyst_id_fkey(name, avatar_url)').eq('status', 'approved').order('start_date', {
+          ascending: true
+        }),
+        supabase.from('profiles').select('*').order('name', {
+          ascending: true
+        })
+      ]);
       if (absenceError) throw absenceError;
-      setAbsenceRequests(absenceData || []);
-
-      // Fetch all analysts
-      const {
-        data: analystData,
-        error: analystError
-      } = await supabase.from('profiles').select('*').order('name', {
-        ascending: true
-      });
       if (analystError) throw analystError;
+      setAbsenceRequests(absenceData || []);
       setAnalysts(analystData || []);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -250,8 +246,6 @@ export const TeamCalendar = ({
           </div>
         </div>
 
-        {/* Legend for analyst colors */}
-        {absenceRequests.length > 0}
       </CardContent>
     </Card>;
 };

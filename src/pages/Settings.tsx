@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, User, Bell, Shield, Moon, Sun, Monitor } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTheme } from "@/components/ThemeProvider";
@@ -26,20 +28,64 @@ const Settings = () => {
     area: userProfile?.area || ''
   });
 
-  // Notification settings (mock data for demo)
-  const [notifications, setNotifications] = useState({
+  // Notification preferences aren't wired to any actual notification
+  // sender in this app yet, so the controls below are disabled and
+  // labeled "Coming soon" rather than pretending to save a setting.
+  const [notifications] = useState({
     email: true,
     desktop: false,
     taskReminders: true,
     absenceUpdates: true
   });
 
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordSaving, setPasswordSaving] = useState(false);
+
+  const handleChangePassword = async () => {
+    if (newPassword.length < 6) {
+      toast({ title: 'Password too short', description: 'Use at least 6 characters.', variant: 'destructive' });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast({ title: 'Passwords do not match', variant: 'destructive' });
+      return;
+    }
+    setPasswordSaving(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast({ title: 'Password updated', description: 'Your password has been changed.' });
+      setShowPasswordDialog(false);
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error) {
+      console.error('Error changing password:', error);
+      toast({ title: 'Error', description: 'Could not update your password.', variant: 'destructive' });
+    } finally {
+      setPasswordSaving(false);
+    }
+  };
+
   // Avatar upload handlers
   const fileInputRef = useRef<HTMLInputElement>(null);
   const handleAvatarClick = () => fileInputRef.current?.click();
+  const MAX_AVATAR_BYTES = 5 * 1024 * 1024; // 5MB
+  const ALLOWED_AVATAR_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
+    if (!ALLOWED_AVATAR_TYPES.includes(file.type)) {
+      toast({ title: 'Unsupported file type', description: 'Use a PNG, JPEG, WEBP or GIF image.', variant: 'destructive' });
+      e.target.value = '';
+      return;
+    }
+    if (file.size > MAX_AVATAR_BYTES) {
+      toast({ title: 'File too large', description: 'Avatars must be 5MB or smaller.', variant: 'destructive' });
+      e.target.value = '';
+      return;
+    }
     setLoading(true);
     try {
       const ext = file.name.split('.').pop() || 'png';
@@ -240,9 +286,10 @@ const Settings = () => {
             <CardTitle className="flex items-center gap-2">
               <Bell className="h-5 w-5" />
               Notifications
+              <Badge variant="outline" className="ml-2 font-normal">Coming soon</Badge>
             </CardTitle>
             <CardDescription>
-              Manage how you receive notifications
+              This app doesn't send notifications yet, so these preferences aren't saved.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 bg-[hsl(var(--panel))]">
@@ -253,10 +300,7 @@ const Settings = () => {
                   Receive notifications via email
                 </p>
               </div>
-              <Switch checked={notifications.email} onCheckedChange={checked => setNotifications(prev => ({
-              ...prev,
-              email: checked
-            }))}  />
+              <Switch checked={notifications.email} disabled />
             </div>
 
             <Separator />
@@ -268,10 +312,7 @@ const Settings = () => {
                   Show browser notifications
                 </p>
               </div>
-              <Switch checked={notifications.desktop} onCheckedChange={checked => setNotifications(prev => ({
-              ...prev,
-              desktop: checked
-            }))}  />
+              <Switch checked={notifications.desktop} disabled />
             </div>
 
             <Separator />
@@ -283,10 +324,7 @@ const Settings = () => {
                   Get reminded about upcoming task deadlines
                 </p>
               </div>
-              <Switch checked={notifications.taskReminders} onCheckedChange={checked => setNotifications(prev => ({
-              ...prev,
-              taskReminders: checked
-            }))}  />
+              <Switch checked={notifications.taskReminders} disabled />
             </div>
 
             <Separator />
@@ -298,10 +336,7 @@ const Settings = () => {
                   Notifications about absence request status
                 </p>
               </div>
-              <Switch checked={notifications.absenceUpdates} onCheckedChange={checked => setNotifications(prev => ({
-              ...prev,
-              absenceUpdates: checked
-            }))}  />
+              <Switch checked={notifications.absenceUpdates} disabled />
             </div>
           </CardContent>
         </Card>
@@ -325,7 +360,7 @@ const Settings = () => {
                   Update your account password
                 </p>
               </div>
-               <Button variant="outline" size="sm" >
+              <Button variant="outline" size="sm" onClick={() => setShowPasswordDialog(true)}>
                 Change Password
               </Button>
             </div>
@@ -334,18 +369,46 @@ const Settings = () => {
 
             <div className="flex items-center justify-between">
               <div>
-                <Label>Two-Factor Authentication</Label>
+                <Label className="flex items-center gap-2">
+                  Two-Factor Authentication
+                  <Badge variant="outline" className="font-normal">Coming soon</Badge>
+                </Label>
                 <p className="text-sm text-muted-foreground">
                   Add an extra layer of security to your account
                 </p>
               </div>
-              <Button variant="outline" size="sm" >
+              <Button variant="outline" size="sm" disabled>
                 Enable 2FA
               </Button>
             </div>
           </CardContent>
         </Card>
       </main>
+
+      <Dialog open={showPasswordDialog} onOpenChange={(open) => { setShowPasswordDialog(open); if (!open) { setNewPassword(''); setConfirmPassword(''); } }}>
+        <DialogContent className="sm:max-w-md bg-[hsl(var(--panel))]">
+          <DialogHeader>
+            <DialogTitle>Change Password</DialogTitle>
+            <DialogDescription>Choose a new password for your account.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <Label htmlFor="new-password">New password</Label>
+              <Input id="new-password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="••••••" autoComplete="new-password" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">Confirm new password</Label>
+              <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••" autoComplete="new-password" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPasswordDialog(false)} disabled={passwordSaving}>Cancel</Button>
+            <Button onClick={handleChangePassword} disabled={passwordSaving}>
+              {passwordSaving ? 'Saving...' : 'Update Password'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>;
 };
 export default Settings;

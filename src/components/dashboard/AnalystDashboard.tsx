@@ -32,34 +32,29 @@ export const AnalystDashboard = () => {
   const fetchData = async () => {
     if (!user) return;
     try {
-      // Fetch absence requests
-      const {
-        data: absences
-      } = await supabase.from('absence_requests').select('*').eq('analyst_id', user.id).order('created_at', {
-        ascending: false
-      });
-
-      // Fetch tasks
-      const {
-        data: userTasks
-      } = await supabase.from('tasks').select('*, assigned_by_profile:profiles!tasks_assigned_by_fkey(name, avatar_url)').eq('assigned_to', user.id).order('created_at', {
-        ascending: false
-      });
-
-      // Fetch all analysts (team) excluding current user
-      const { data: analysts } = await supabase
-        .from('profiles')
-        .select('*')
-        .neq('user_id', user.id);
-
-      // Fetch approved absences for today (to exclude from online count)
       const today = new Date().toISOString().split('T')[0];
-      const { data: absencesToday } = await supabase
-        .from('absence_requests')
-        .select('*')
-        .in('status', ['approved', 'cancel_requested'])
-        .lte('start_date', today)
-        .gte('end_date', today);
+      const [
+        { data: absences, error: absencesError },
+        { data: userTasks, error: tasksError },
+        { data: analysts, error: analystsError },
+        { data: absencesToday, error: absencesTodayError }
+      ] = await Promise.all([
+        // Absence requests
+        supabase.from('absence_requests').select('*').eq('analyst_id', user.id).order('created_at', {
+          ascending: false
+        }),
+        // Tasks
+        supabase.from('tasks').select('*, assigned_by_profile:profiles!tasks_assigned_by_fkey(name, avatar_url)').eq('assigned_to', user.id).order('created_at', {
+          ascending: false
+        }),
+        // All analysts (team) excluding current user
+        supabase.from('profiles').select('*').neq('user_id', user.id),
+        // Approved absences for today (to exclude from online count)
+        supabase.from('absence_requests').select('*').in('status', ['approved', 'cancel_requested']).lte('start_date', today).gte('end_date', today)
+      ]);
+
+      const firstError = absencesError || tasksError || analystsError || absencesTodayError;
+      if (firstError) throw firstError;
 
       setAbsenceRequests(absences || []);
       setTasks(userTasks || []);
