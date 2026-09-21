@@ -44,8 +44,8 @@ const Settings = () => {
   const [passwordSaving, setPasswordSaving] = useState(false);
 
   const handleChangePassword = async () => {
-    if (newPassword.length < 6) {
-      toast({ title: 'Password too short', description: 'Use at least 6 characters.', variant: 'destructive' });
+    if (newPassword.length < 8) {
+      toast({ title: 'Password too short', description: 'Use at least 8 characters.', variant: 'destructive' });
       return;
     }
     if (newPassword !== confirmPassword) {
