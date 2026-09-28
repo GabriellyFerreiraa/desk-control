@@ -8,6 +8,8 @@ import { format, isSameDay, parseISO, getDay } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { MapPin, Clock, User } from 'lucide-react';
 import { UserAvatar } from '@/components/UserAvatar';
+import { useT } from '@/i18n/lang';
+import { useDateLocale } from '@/i18n/dates';
 interface AbsenceRequest {
   id: string;
   analyst_id: string;
@@ -40,6 +42,8 @@ export const TeamCalendar = ({
     user,
     userProfile
   } = useAuth();
+  const t = useT();
+  const locale = useDateLocale();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [absenceRequests, setAbsenceRequests] = useState<AbsenceRequest[]>([]);
   const [analysts, setAnalysts] = useState<Analyst[]>([]);
@@ -103,13 +107,13 @@ export const TeamCalendar = ({
     const isLead = userProfile?.role === 'lead' || userProfile?.role === 'admin';
     if (isOwner || isLead) {
       return {
-        title: request.analyst_profile?.name || 'Analyst',
+        title: request.analyst_profile?.name || t.calendar.analyst,
         subtitle: request.reason
       };
     } else {
       return {
-        title: request.analyst_profile?.name || 'Analyst',
-        subtitle: 'Day OFF'
+        title: request.analyst_profile?.name || t.calendar.analyst,
+        subtitle: t.calendar.dayOff
       };
     }
   };
@@ -128,7 +132,7 @@ export const TeamCalendar = ({
     });
   };
   const formatWorkMode = (mode: string) => {
-    return mode === 'home' ? 'Work from Home' : 'Office';
+    return mode === 'home' ? t.workMode.homeLong : t.workMode.office;
   };
   const getWorkModeIcon = (mode: string) => {
     return mode === 'home' ? '🏠' : '🏢';
@@ -146,38 +150,38 @@ export const TeamCalendar = ({
   if (loading) {
     return <Card className={className}>
         <CardHeader>
-          <CardTitle>Team Calendar</CardTitle>
+          <CardTitle>{t.calendar.loadingTitle}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
-            <div className="animate-pulse text-sm text-muted-foreground">Loading calendar...</div>
+            <div className="animate-pulse text-sm text-muted-foreground">{t.calendar.loading}</div>
           </div>
         </CardContent>
       </Card>;
   }
   return <Card className={className}>
       <CardHeader>
-        <CardTitle>Calendar</CardTitle>
+        <CardTitle>{t.calendar.title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid lg:grid-cols-3 gap-4">
           {/* Calendar */}
           <div className="flex justify-center">
-            <Calendar mode="single" selected={selectedDate} onSelect={date => date && setSelectedDate(date)} modifiers={modifiers} modifiersStyles={modifiersStyles} className={cn("p-3 pointer-events-auto border rounded-md")} />
+            <Calendar mode="single" selected={selectedDate} onSelect={date => date && setSelectedDate(date)} modifiers={modifiers} modifiersStyles={modifiersStyles} locale={locale} className={cn("p-3 pointer-events-auto border rounded-md")} />
           </div>
 
           {/* Analysts Working Today */}
           <div className="space-y-3">
             <h3 className="font-medium flex items-center gap-2">
               <User className="h-4 w-4" />
-              Working Today
+              {t.calendar.workingToday}
             </h3>
             <p className="text-xs text-muted-foreground">
-              {format(selectedDate, 'EEEE, MMMM d, yyyy')}
+              {format(selectedDate, 'PPPP', { locale })}
             </p>
             
             {getWorkingAnalysts(selectedDate).length === 0 ? <p className="text-sm text-muted-foreground">
-                No analysts scheduled to work today
+                {t.calendar.noneWorking}
               </p> : <div className="space-y-2 max-h-64 overflow-y-auto">
                 {getWorkingAnalysts(selectedDate).map((analyst, index) => {
               const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
@@ -193,7 +197,7 @@ export const TeamCalendar = ({
                           </p>
                         </div>
                         <Badge variant="outline" className="text-xs">
-                          {analyst.role}
+                          {(t.roles as Record<string, string>)[analyst.role] ?? analyst.role}
                         </Badge>
                       </div>
                       
@@ -216,11 +220,11 @@ export const TeamCalendar = ({
           {/* Absences Today */}
           <div className="space-y-3">
             <h3 className="font-medium">
-              Absences Today
+              {t.calendar.absencesToday}
             </h3>
             
             {getSelectedDateAbsences().length === 0 ? <p className="text-sm text-muted-foreground">
-                No absences scheduled for this day
+                {t.calendar.noAbsences}
               </p> : <div className="space-y-2 max-h-64 overflow-y-auto">
                 {getSelectedDateAbsences().map((request, index) => {
               const displayInfo = formatAbsenceDisplay(request);
@@ -238,7 +242,7 @@ export const TeamCalendar = ({
                         {displayInfo.subtitle}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {format(parseISO(request.start_date), 'MMM d')} - {format(parseISO(request.end_date), 'MMM d')}
+                        {format(parseISO(request.start_date), 'PP', { locale })} - {format(parseISO(request.end_date), 'PP', { locale })}
                       </p>
                     </div>;
             })}

@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, Clock, Home, Building, Users, CheckCircle, AlertCircle, Plus, X } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
@@ -17,12 +16,14 @@ import { CancellationRequestModal } from '@/components/modals/CancellationReques
 import { LearningTab } from '@/components/learning/LearningTab';
 import { useSearchParams } from 'react-router-dom';
 import { useT } from '@/i18n/lang';
+import { parseDay, useDateLocale } from '@/i18n/dates';
 export const AnalystDashboard = () => {
   const {
     userProfile,
     user
   } = useAuth();
   const t = useT();
+  const locale = useDateLocale();
   // ?tab=learning lets the course player send the analyst back to this tab.
   const [searchParams] = useSearchParams();
   const [absenceRequests, setAbsenceRequests] = useState([]);
@@ -69,8 +70,8 @@ export const AnalystDashboard = () => {
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({
-        title: "Error",
-        description: "Could not load data",
+        title: t.common.error,
+        description: t.dashboard.loadFailed,
         variant: "destructive"
       });
     } finally {
@@ -87,15 +88,15 @@ export const AnalystDashboard = () => {
       }).eq('id', taskId);
       if (error) throw error;
       toast({
-        title: "Task completed",
-        description: "The task has been marked as completed"
+        title: t.tasks.completedToast,
+        description: t.tasks.completedToastBody
       });
       fetchData(); // Refresh data
     } catch (error) {
       console.error('Error updating task:', error);
       toast({
-        title: "Error",
-        description: "Could not update task",
+        title: t.common.error,
+        description: t.tasks.updateFailed,
         variant: "destructive"
       });
     }
@@ -107,35 +108,15 @@ export const AnalystDashboard = () => {
       } = await supabase.from('tasks').delete().eq('id', taskId);
       if (error) throw error;
       toast({
-        title: "Task removed",
-        description: "The task notification has been removed"
+        title: t.tasks.removedToast,
+        description: t.tasks.removedToastBody
       });
       fetchData(); // Refresh data
     } catch (error) {
       console.error('Error deleting task:', error);
       toast({
-        title: "Error",
-        description: "Could not remove task",
-        variant: "destructive"
-      });
-    }
-  };
-  const deleteAbsenceRequest = async (requestId: string) => {
-    try {
-      const {
-        error
-      } = await supabase.from('absence_requests').delete().eq('id', requestId);
-      if (error) throw error;
-      toast({
-        title: "Request removed",
-        description: "The absence request notification has been removed"
-      });
-      fetchData(); // Refresh data
-    } catch (error) {
-      console.error('Error deleting absence request:', error);
-      toast({
-        title: "Error",
-        description: "Could not remove request",
+        title: t.common.error,
+        description: t.tasks.removeFailed,
         variant: "destructive"
       });
     }
@@ -149,18 +130,18 @@ export const AnalystDashboard = () => {
         .eq('id', requestId)
         .eq('status', 'pending');
       if (error) throw error;
-      toast({ title: 'Request canceled', description: 'Your request was canceled before approval.' });
+      toast({ title: t.absences.toasts.canceled, description: t.absences.toasts.canceledBody });
       fetchData();
     } catch (error) {
       console.error('Error canceling request:', error);
-      toast({ title: 'Error', description: 'Could not cancel request', variant: 'destructive' });
+      toast({ title: t.common.error, description: t.absences.toasts.cancelFailed, variant: 'destructive' });
     }
   };
 
   const requestCancellation = async (requestId: string, reason: string) => {
     try {
       if (!reason || !reason.trim()) {
-        toast({ title: 'Cancellation reason required', description: 'Please enter a reason to proceed.' });
+        toast({ title: t.absences.toasts.reasonRequired, description: t.absences.toasts.reasonRequiredBody });
         return;
       }
       const { error } = await supabase
@@ -169,11 +150,11 @@ export const AnalystDashboard = () => {
         .eq('id', requestId)
         .eq('status', 'approved');
       if (error) throw error;
-      toast({ title: 'Cancellation requested', description: 'Waiting for lead approval.' });
+      toast({ title: t.absences.toasts.cancellationRequested, description: t.absences.toasts.cancellationRequestedBody });
       fetchData();
     } catch (error) {
       console.error('Error requesting cancellation:', error);
-      toast({ title: 'Error', description: 'Could not request cancellation', variant: 'destructive' });
+      toast({ title: t.common.error, description: t.absences.toasts.cancellationFailed, variant: 'destructive' });
     }
   };
 
@@ -181,53 +162,32 @@ export const AnalystDashboard = () => {
     fetchData();
   }, [user]);
   const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      pending: {
-        label: 'Pending',
-        variant: 'secondary' as const
-      },
-      approved: {
-        label: 'Approved',
-        variant: 'success' as const
-      },
-      rejected: {
-        label: 'Rejected',
-        variant: 'destructive' as const
-      },
-      cancel_requested: {
-        label: 'Cancellation requested',
-        variant: 'secondary' as const
-      },
-      cancelled: {
-        label: 'Canceled',
-        variant: 'outline' as const
-      }
+    const variants = {
+      pending: 'secondary',
+      approved: 'success',
+      rejected: 'destructive',
+      cancel_requested: 'secondary',
+      cancelled: 'outline'
     } as const;
-    return (statusConfig as any)[status] || {
-      label: status,
-      variant: 'outline' as const
+    return {
+      label: (t.absences.status as Record<string, string>)[status] ?? status,
+      variant: (variants as Record<string, 'secondary' | 'success' | 'destructive' | 'outline'>)[status] ?? 'outline' as const
     };
   };
   const getTaskStatusBadge = (status: string) => {
-    const statusConfig = {
-      pending: {
-        label: 'Pending',
-        variant: 'secondary' as const
-      },
-      in_progress: {
-        label: 'In progress',
-        variant: 'default' as const
-      },
-      completed: {
-        label: 'Completed',
-        variant: 'success' as const
-      }
-    };
-    return statusConfig[status] || {
-      label: status,
-      variant: 'outline' as const
+    const variants = {
+      pending: 'secondary',
+      in_progress: 'default',
+      completed: 'success'
+    } as const;
+    return {
+      label: (t.tasks.status as Record<string, string>)[status] ?? status,
+      variant: (variants as Record<string, 'secondary' | 'default' | 'success'>)[status] ?? 'outline' as const
     };
   };
+  const dayRange = (request: { start_date: string; end_date: string }) =>
+    `${format(parseDay(request.start_date), 'PPP', { locale })} - ${format(parseDay(request.end_date), 'PPP', { locale })}`;
+  const dueText = (dueDate: string) => t.tasks.due(format(new Date(dueDate), 'PPp', { locale }));
 
   const isAnalystOnline = (analyst: any) => {
     const now = new Date();
@@ -248,6 +208,7 @@ export const AnalystDashboard = () => {
 
   const getCurrentShiftInfo = () => {
     if (!userProfile?.work_days) return null;
+    // Work-day keys are stored as English short names (mon, tue, ...).
     const today = new Date().toLocaleDateString('en-US', {
       weekday: 'short'
     }).toLowerCase();
@@ -270,24 +231,33 @@ export const AnalystDashboard = () => {
   const shiftInfo = getCurrentShiftInfo();
   const onlineNow = onlineAnalysts.filter((a: any) => isAnalystOnline(a));
   if (loading) {
-    return <div className="p-6">Loading dashboard...</div>;
+    return <div className="p-6">{t.dashboard.loading}</div>;
   }
+  const taskAuthor = (task: any) => task.assigned_by === task.assigned_to ? (
+    <Badge variant="outline">{t.tasks.selfAssigned}</Badge>
+  ) : (
+    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+      <span>{t.tasks.leadAssignedBy}</span>
+      <UserAvatar src={task.assigned_by_profile?.avatar_url} name={task.assigned_by_profile?.name} size="xs" />
+      <span>{task.assigned_by_profile?.name}</span>
+    </div>
+  );
   return <div className="space-y-6">
       {/* Quick Stats */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Current Shift</CardTitle>
+            <CardTitle className="text-sm font-medium">{t.dashboard.currentShift}</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {shiftInfo?.isWorkDay ? shiftInfo.shift : 'Day off'}
+              {shiftInfo?.isWorkDay ? shiftInfo.shift : t.dashboard.dayOff}
             </div>
             {shiftInfo?.isWorkDay && <div className="flex items-center mt-2">
                 {shiftInfo.mode === 'home' ? <Home className="h-4 w-4 mr-1" /> : <Building className="h-4 w-4 mr-1" />}
-                <span className="text-sm text-muted-foreground capitalize">
-                  {shiftInfo.mode === 'home' ? 'Home' : 'Office'}
+                <span className="text-sm text-muted-foreground">
+                  {shiftInfo.mode === 'home' ? t.workMode.home : t.workMode.office}
                 </span>
               </div>}
           </CardContent>
@@ -295,7 +265,7 @@ export const AnalystDashboard = () => {
 
         <Card onClick={() => setActiveTab('tasks')} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setActiveTab('tasks')} tabIndex={0} className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Tasks</CardTitle>
+            <CardTitle className="text-sm font-medium">{t.dashboard.pendingTasks}</CardTitle>
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -307,7 +277,7 @@ export const AnalystDashboard = () => {
 
         <Card onClick={() => setActiveTab('absences')} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setActiveTab('absences')} tabIndex={0} className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Requests</CardTitle>
+            <CardTitle className="text-sm font-medium">{t.dashboard.pendingRequests}</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -319,7 +289,7 @@ export const AnalystDashboard = () => {
 
         <Card onClick={() => setActiveTab('team')} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setActiveTab('team')} tabIndex={0} className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Online Analysts</CardTitle>
+            <CardTitle className="text-sm font-medium">{t.dashboard.onlineAnalysts}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -330,11 +300,11 @@ export const AnalystDashboard = () => {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="tasks">My Tasks</TabsTrigger>
-          <TabsTrigger value="absences">Absence Requests</TabsTrigger>
-          <TabsTrigger value="team">Team</TabsTrigger>
-          <TabsTrigger value="reports">Reports</TabsTrigger>
+        <TabsList className="flex-wrap h-auto">
+          <TabsTrigger value="tasks">{t.dashboard.tabs.myTasks}</TabsTrigger>
+          <TabsTrigger value="absences">{t.dashboard.tabs.absences}</TabsTrigger>
+          <TabsTrigger value="team">{t.dashboard.tabs.team}</TabsTrigger>
+          <TabsTrigger value="reports">{t.dashboard.tabs.reports}</TabsTrigger>
           <TabsTrigger value="learning">{t.learning.tab}</TabsTrigger>
         </TabsList>
 
@@ -346,19 +316,19 @@ export const AnalystDashboard = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle>My Tasks</CardTitle>
+                <CardTitle>{t.tasks.myTitle}</CardTitle>
                 <CardDescription>
-                  Tasks assigned to you or self-assigned
+                  {t.tasks.myDescription}
                 </CardDescription>
               </div>
               <Button onClick={() => setShowSelfTaskForm(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                Self-assign task
+                {t.tasks.selfAssign}
               </Button>
             </CardHeader>
             <CardContent>
               {tasks.filter(task => task.status !== 'completed').length === 0 ? <p className="text-center text-muted-foreground py-4">
-                    You have no active tasks
+                    {t.tasks.noActive}
                   </p> : <div className="space-y-4">
                     {tasks.filter(task => task.status !== 'completed').map(task => <div key={task.id} className="flex items-center justify-between p-4 border rounded-lg bg-[hsl(var(--panel))]">
                           <div className="flex-1">
@@ -366,22 +336,14 @@ export const AnalystDashboard = () => {
                             {task.description && <p className="text-sm text-muted-foreground mt-1">
                                 {task.description}
                               </p>}
-                              <div className="flex items-center gap-2 mt-2">
+                              <div className="flex items-center gap-2 mt-2 flex-wrap">
                                 <Badge className="bg-orange-500">
                                   {getTaskStatusBadge(task.status).label}
                                 </Badge>
-                                {task.assigned_by === task.assigned_to ? (
-                                  <Badge variant="outline">Self-assigned</Badge>
-                                ) : (
-                                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                    <span>Lead-assigned by</span>
-                                    <UserAvatar src={task.assigned_by_profile?.avatar_url} name={task.assigned_by_profile?.name} size="xs" />
-                                    <span>{task.assigned_by_profile?.name}</span>
-                                  </div>
-                                )}
+                                {taskAuthor(task)}
                                 {task.due_date && (
                                   <span className="text-xs text-muted-foreground">
-                                    Due: {format(new Date(task.due_date), 'PPp')}
+                                    {dueText(task.due_date)}
                                   </span>
                                 )}
                               </div>
@@ -389,11 +351,11 @@ export const AnalystDashboard = () => {
                           <div className="flex gap-2 ml-4">
                             {task.status !== 'completed' && <Button size="sm" onClick={() => markTaskCompleted(task.id)}>
                                 <CheckCircle className="h-4 w-4 mr-1" />
-                                Complete
+                                {t.tasks.complete}
                               </Button>}
                             {task.status === 'completed' && <Button size="sm" variant="outline" onClick={() => deleteTask(task.id)} className="bg-[hsl(var(--panel))] hover:bg-[hsl(var(--panel))]">
                                 <X className="h-4 w-4 mr-1" />
-                                Remove
+                                {t.tasks.remove}
                               </Button>}
                           </div>
                         </div>)}
@@ -406,24 +368,23 @@ export const AnalystDashboard = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle>Absence Requests</CardTitle>
+                <CardTitle>{t.absences.title}</CardTitle>
                 <CardDescription>
-                  Manage your absence requests
+                  {t.absences.description}
                 </CardDescription>
               </div>
               <Button onClick={() => setShowRequestForm(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                New Request
+                {t.absences.newRequest}
               </Button>
             </CardHeader>
             <CardContent>
-              {absenceRequests.filter(req => req.status === 'pending' || req.status === 'cancel_requested').length === 0 ? <p className="text-center text-muted-foreground py-4">No pending absence requests</p> : <div className="space-y-4">
+              {absenceRequests.filter(req => req.status === 'pending' || req.status === 'cancel_requested').length === 0 ? <p className="text-center text-muted-foreground py-4">{t.absences.noPendingMine}</p> : <div className="space-y-4">
                   {absenceRequests.filter(req => req.status === 'pending' || req.status === 'cancel_requested').map(request => <div key={request.id} className="p-4 border rounded-lg bg-[hsl(var(--panel))]">
                         <div className="flex justify-between items-start mb-2">
                           <div className="flex-1">
                             <h4 className="font-medium">
-                              {format(new Date(request.start_date), 'PPP')} - {' '}
-                              {format(new Date(request.end_date), 'PPP')}
+                              {dayRange(request)}
                             </h4>
                             <p className="text-sm text-muted-foreground mt-1">{request.reason}</p>
                           </div>
@@ -434,12 +395,12 @@ export const AnalystDashboard = () => {
                           </div>
                         </div>
                         {request.lead_comment && <div className="mt-3 p-3 bg-muted rounded">
-                            <p className="text-sm"><strong>Lead Comment:</strong> {request.lead_comment}</p>
+                            <p className="text-sm"><strong>{t.absences.leadComment}</strong> {request.lead_comment}</p>
                           </div>}
                         {request.status === 'pending' && (
                           <div className="mt-3 flex gap-2">
                             <Button size="sm" variant="outline" onClick={() => cancelPendingRequest(request.id)}>
-                              Cancel Request
+                              {t.absences.cancelRequest}
                             </Button>
                           </div>
                         )}
@@ -452,14 +413,14 @@ export const AnalystDashboard = () => {
         <TabsContent value="team" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Team Information</CardTitle>
+              <CardTitle>{t.team.infoTitle}</CardTitle>
               <CardDescription>
-                Shift information for each analyst
+                {t.team.infoDescription}
               </CardDescription>
             </CardHeader>
             <CardContent>
               {onlineAnalysts.length === 0 ? <p className="text-center text-muted-foreground py-4">
-                  No other analysts connected
+                  {t.team.noOthers}
                 </p> : <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {onlineAnalysts.map((analyst) => {
                     const isOnline = onlineNow.includes(analyst);
@@ -472,18 +433,18 @@ export const AnalystDashboard = () => {
                           <UserAvatar src={analyst.avatar_url} name={analyst.name} size="sm" />
                           <div>
                             <p className="font-medium">{analyst.name}</p>
-                            <p className="text-xs text-muted-foreground capitalize">{analyst.role}</p>
+                            <p className="text-xs text-muted-foreground">{(t.roles as Record<string, string>)[analyst.role] ?? analyst.role}</p>
                           </div>
                         </div>
                         {todaySchedule?.active ? (
                           <div className="text-xs text-muted-foreground">
-                            <p>Schedule: {String(analyst.start_time).slice(0,5)} - {String(analyst.end_time).slice(0,5)}</p>
-                            <p>Lunch: {analyst.lunch_start ? String(analyst.lunch_start).slice(0,5) : '—'}</p>
-                            <p>Break 1: {analyst.break1_start ? String(analyst.break1_start).slice(0,5) : '—'}</p>
-                            <p>Break 2: {analyst.break2_start ? String(analyst.break2_start).slice(0,5) : '—'}</p>
+                            <p>{t.team.schedule}: {String(analyst.start_time).slice(0,5)} - {String(analyst.end_time).slice(0,5)}</p>
+                            <p>{t.team.lunch}: {analyst.lunch_start ? String(analyst.lunch_start).slice(0,5) : '-'}</p>
+                            <p>{t.team.break1}: {analyst.break1_start ? String(analyst.break1_start).slice(0,5) : '-'}</p>
+                            <p>{t.team.break2}: {analyst.break2_start ? String(analyst.break2_start).slice(0,5) : '-'}</p>
                           </div>
                         ) : (
-                          <div className="text-xs text-muted-foreground">Not scheduled today</div>
+                          <div className="text-xs text-muted-foreground">{t.team.notScheduled}</div>
                         )}
                       </div>
                     );
@@ -496,31 +457,23 @@ export const AnalystDashboard = () => {
         <TabsContent value="reports" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Completed Tasks</CardTitle>
-              <CardDescription>Tasks you have completed</CardDescription>
+              <CardTitle>{t.tasks.completedTitle}</CardTitle>
+              <CardDescription>{t.tasks.completedMine}</CardDescription>
             </CardHeader>
             <CardContent>
-              {tasks.filter(task => task.status === 'completed').length === 0 ? <p className="text-center text-muted-foreground py-4">No completed tasks</p> : <div className="space-y-4">
+              {tasks.filter(task => task.status === 'completed').length === 0 ? <p className="text-center text-muted-foreground py-4">{t.tasks.noCompleted}</p> : <div className="space-y-4">
                   {tasks.filter(task => task.status === 'completed').map(task => <div key={task.id} className="flex items-center justify-between p-4 border rounded-lg bg-[hsl(var(--panel))]">
                         <div className="flex-1">
                           <h4 className="font-medium">{task.title}</h4>
                           {task.description && <p className="text-sm text-muted-foreground mt-1">{task.description}</p>}
-                          <div className="flex items-center gap-2 mt-2">
-                            <Badge {...getTaskStatusBadge(task.status)}>
+                          <div className="flex items-center gap-2 mt-2 flex-wrap">
+                            <Badge variant={getTaskStatusBadge(task.status).variant}>
                               {getTaskStatusBadge(task.status).label}
                             </Badge>
-                            {task.assigned_by === task.assigned_to ? (
-                              <Badge variant="outline">Self-assigned</Badge>
-                            ) : (
-                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <span>Lead-assigned by</span>
-                                <UserAvatar src={task.assigned_by_profile?.avatar_url} name={task.assigned_by_profile?.name} size="xs" />
-                                <span>{task.assigned_by_profile?.name}</span>
-                              </div>
-                            )}
+                            {taskAuthor(task)}
                             {task.due_date && (
                               <span className="text-xs text-muted-foreground">
-                                Due: {format(new Date(task.due_date), 'PPp')}
+                                {dueText(task.due_date)}
                               </span>
                             )}
                           </div>
@@ -532,34 +485,33 @@ export const AnalystDashboard = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>Processed Absence Requests</CardTitle>
-              <CardDescription>Approved, rejected or cancelled</CardDescription>
+              <CardTitle>{t.absences.processedTitle}</CardTitle>
+              <CardDescription>{t.absences.processedDescription}</CardDescription>
             </CardHeader>
             <CardContent>
-              {absenceRequests.filter(req => ['approved', 'rejected', 'cancelled'].includes(req.status)).length === 0 ? <p className="text-center text-muted-foreground py-4">No processed requests</p> : <div className="space-y-4">
+              {absenceRequests.filter(req => ['approved', 'rejected', 'cancelled'].includes(req.status)).length === 0 ? <p className="text-center text-muted-foreground py-4">{t.absences.noProcessed}</p> : <div className="space-y-4">
                   {absenceRequests.filter(req => ['approved', 'rejected', 'cancelled'].includes(req.status)).map(request => <div key={request.id} className="p-4 border rounded-lg bg-[hsl(var(--panel))] px-[16px] py-[16px] mx-0">
                         <div className="flex justify-between items-start mb-2">
                           <div className="flex-1">
                             <h4 className="font-medium">
-                              {format(new Date(request.start_date), 'PPP')} - {' '}
-                              {format(new Date(request.end_date), 'PPP')}
+                              {dayRange(request)}
                             </h4>
                             <p className="text-sm text-muted-foreground mt-1">{request.reason}</p>
                           </div>
                             <div className="flex items-center gap-2">
-                              <Badge {...getStatusBadge(request.status)}>
+                              <Badge variant={getStatusBadge(request.status).variant}>
                                 {getStatusBadge(request.status).label}
                               </Badge>
                               {request.status === 'approved' && (
                                 <Button size="sm" onClick={() => { setSelectedRequestId(request.id); setShowCancelModal(true); }}>
-                                  Request Cancellation
+                                  {t.absences.requestCancellation}
                                 </Button>
                               )}
                             </div>
                         </div>
                         {request.lead_comment && <div className="mt-3 p-3 bg-muted rounded">
                             <p className="text-sm">
-                              <strong>Lead Comment:</strong> {request.lead_comment}
+                              <strong>{t.absences.leadComment}</strong> {request.lead_comment}
                             </p>
                           </div>}
                       </div>)}

@@ -2,7 +2,7 @@
 
 Especificación funcional y técnica de la nueva pestaña **Learning**, la pantalla de **Admin** y el soporte de idiomas.
 
-Estado: aprobado para desarrollo (2026-09-28). Proyecto inicial: **Merck SD**.
+Estado: fases 1 a 5 implementadas (2026-10-02). Proyecto inicial: **Merck SD**.
 
 ---
 

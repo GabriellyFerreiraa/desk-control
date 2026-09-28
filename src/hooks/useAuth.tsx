@@ -2,6 +2,12 @@ import { useState, useEffect, createContext, useContext, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { STRINGS } from '@/i18n/strings';
+import { readStoredLang } from '@/i18n/storage';
+
+// This provider sits outside LangProvider, so it reads the active language
+// from storage (kept in sync by LangProvider) instead of useT().
+const authStrings = () => STRINGS[readStoredLang()].auth;
 
 interface AuthContextType {
   user: User | null;
@@ -96,6 +102,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     });
 
+    const ta = authStrings();
     if (error) {
       // Supabase's own message ("User already registered") lets an
       // attacker enumerate which emails have accounts. Keep other
@@ -103,16 +110,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // those don't reveal anything about existing accounts.
       const revealsAccountExistence = /already registered|already exists/i.test(error.message);
       toast({
-        title: "Registration error",
-        description: revealsAccountExistence
-          ? "If this email can be registered, check your inbox to confirm your account."
-          : error.message,
+        title: ta.signUpError,
+        description: revealsAccountExistence ? ta.signUpNeutral : error.message,
         variant: "destructive"
       });
     } else {
       toast({
-        title: "Registration successful",
-        description: "Check your email to confirm your account"
+        title: ta.signUpSuccess,
+        description: ta.signUpSuccessBody
       });
     }
 
@@ -126,9 +131,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
     
     if (error) {
+      const ta = authStrings();
+      const code = (error as { code?: string }).code;
+      const description = code === 'invalid_credentials' || /invalid login credentials/i.test(error.message)
+        ? ta.errors.invalidCredentials
+        : code === 'email_not_confirmed' || /email not confirmed/i.test(error.message)
+          ? ta.errors.emailNotConfirmed
+          : error.message;
       toast({
-        title: "Sign in error",
-        description: error.message,
+        title: ta.signInError,
+        description,
         variant: "destructive"
       });
     }
@@ -152,7 +164,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           await supabase.auth.signOut({ scope: 'local' });
         } else {
           toast({
-            title: "Sign out error",
+            title: authStrings().signOutError,
             description: (error as any)?.message ?? 'Unknown error',
             variant: "destructive"
           });

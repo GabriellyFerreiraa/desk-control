@@ -12,17 +12,18 @@ import Admin from "./pages/Admin";
 import CourseEditor from "./pages/CourseEditor";
 import CoursePlayer from "./pages/CoursePlayer";
 import NotFound from "./pages/NotFound";
-import { LangProvider } from "@/i18n/lang";
+import { LangProvider, useT } from "@/i18n/lang";
 
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
+  const t = useT();
   
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse text-lg">Cargando...</div>
+        <div className="animate-pulse text-lg">{t.common.loading}</div>
       </div>
     );
   }
@@ -60,11 +61,12 @@ const ActiveRoute = ({ children }: { children: React.ReactNode }) => {
 // Public Route Component (redirect to dashboard if authenticated)
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
+  const t = useT();
   
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse text-lg">Cargando...</div>
+        <div className="animate-pulse text-lg">{t.common.loading}</div>
       </div>
     );
   }

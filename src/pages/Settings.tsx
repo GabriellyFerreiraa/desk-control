@@ -22,6 +22,7 @@ const Settings = () => {
   const navigate = useNavigate();
   const { lang, setLang } = useLang();
   const t = useT();
+  const ts = t.settingsPage;
 
   const handleLanguageChange = async (value: string) => {
     if (!isLang(value)) return;
@@ -62,24 +63,24 @@ const Settings = () => {
 
   const handleChangePassword = async () => {
     if (newPassword.length < 8) {
-      toast({ title: 'Password too short', description: 'Use at least 8 characters.', variant: 'destructive' });
+      toast({ title: ts.passwordTooShort, description: ts.passwordTooShortBody, variant: 'destructive' });
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast({ title: 'Passwords do not match', variant: 'destructive' });
+      toast({ title: ts.passwordMismatch, variant: 'destructive' });
       return;
     }
     setPasswordSaving(true);
     try {
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
-      toast({ title: 'Password updated', description: 'Your password has been changed.' });
+      toast({ title: ts.passwordUpdated, description: ts.passwordUpdatedBody });
       setShowPasswordDialog(false);
       setNewPassword('');
       setConfirmPassword('');
     } catch (error) {
       console.error('Error changing password:', error);
-      toast({ title: 'Error', description: 'Could not update your password.', variant: 'destructive' });
+      toast({ title: t.common.error, description: ts.passwordFailed, variant: 'destructive' });
     } finally {
       setPasswordSaving(false);
     }
@@ -94,12 +95,12 @@ const Settings = () => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
     if (!ALLOWED_AVATAR_TYPES.includes(file.type)) {
-      toast({ title: 'Unsupported file type', description: 'Use a PNG, JPEG, WEBP or GIF image.', variant: 'destructive' });
+      toast({ title: ts.avatarType, description: ts.avatarTypeBody, variant: 'destructive' });
       e.target.value = '';
       return;
     }
     if (file.size > MAX_AVATAR_BYTES) {
-      toast({ title: 'File too large', description: 'Avatars must be 5MB or smaller.', variant: 'destructive' });
+      toast({ title: ts.avatarTooBig, description: ts.avatarTooBigBody, variant: 'destructive' });
       e.target.value = '';
       return;
     }
@@ -123,11 +124,11 @@ const Settings = () => {
         .eq('user_id', user.id);
       if (updateError) throw updateError;
 
-      toast({ title: 'Avatar updated', description: 'Your profile picture has been updated.' });
+      toast({ title: ts.avatarUpdated, description: ts.avatarUpdatedBody });
       await refreshProfile?.();
     } catch (err) {
       console.error('Avatar upload error', err);
-      toast({ title: 'Upload failed', description: 'Could not update avatar.', variant: 'destructive' });
+      toast({ title: ts.avatarFailed, description: ts.avatarFailedBody, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -145,15 +146,14 @@ const Settings = () => {
       }).eq('user_id', user.id);
       if (error) throw error;
       toast({
-        title: "Success",
-        description: "Profile updated successfully"
+        title: ts.profileSaved
       });
       await refreshProfile?.();
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
-        title: "Error",
-        description: "Could not update profile",
+        title: t.common.error,
+        description: ts.profileSaveFailed,
         variant: "destructive"
       });
     } finally {
@@ -191,10 +191,10 @@ const Settings = () => {
           <CardHeader className="bg-[hsl(var(--panel))]">
             <CardTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />
-              Profile Settings
+              {ts.profileTitle}
             </CardTitle>
             <CardDescription>
-              Manage your personal information and preferences
+              {ts.profileDescription}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6 bg-[hsl(var(--panel))]">
@@ -207,7 +207,7 @@ const Settings = () => {
               </Avatar>
               <div className="space-y-2">
                 <Button variant="outline" size="sm" onClick={handleAvatarClick} disabled={loading} >
-                  Change Avatar
+                  {ts.changeAvatar}
                 </Button>
                 <input
                   ref={fileInputRef}
@@ -217,49 +217,49 @@ const Settings = () => {
                   className="hidden"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Upload a new profile picture
+                  {ts.avatarHint}
                 </p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name">{ts.name}</Label>
                 <Input id="name" value={profileData.name} onChange={e => setProfileData(prev => ({
                 ...prev,
                 name: e.target.value
-              }))} placeholder="Enter your name" className="bg-[hsl(var(--field))]" />
+              }))} placeholder={ts.namePlaceholder} className="bg-[hsl(var(--field))]" />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="area">Work Area</Label>
+                <Label htmlFor="area">{ts.workArea}</Label>
                 <Input id="area" value={profileData.area} onChange={e => setProfileData(prev => ({
                 ...prev,
                 area: e.target.value
-              }))} placeholder="Enter your work area" className="bg-[hsl(var(--field))]" />
+              }))} placeholder={ts.workAreaPlaceholder} className="bg-[hsl(var(--field))]" />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Email</Label>
+                <Label>{ts.email}</Label>
                 <Input value={user?.email || ''} disabled className="bg-muted" />
                 <p className="text-xs text-muted-foreground">
-                  Email cannot be changed
+                  {ts.emailLocked}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label>Role</Label>
-                <Input value={userProfile?.role || ''} disabled className="bg-muted capitalize" />
+                <Label>{ts.role}</Label>
+                <Input value={(t.roles as Record<string, string>)[userProfile?.role] ?? userProfile?.role ?? ''} disabled className="bg-muted" />
                 <p className="text-xs text-muted-foreground">
-                  Role is managed by administrators
+                  {ts.roleLocked}
                 </p>
               </div>
             </div>
 
             <Button onClick={handleProfileUpdate} disabled={loading}>
-              {loading ? 'Saving...' : 'Save Changes'}
+              {loading ? t.common.saving : ts.saveChanges}
             </Button>
           </CardContent>
         </Card>
@@ -269,18 +269,18 @@ const Settings = () => {
           <CardHeader className="bg-[hsl(var(--panel))]">
             <CardTitle className="flex items-center gap-2">
               {getThemeIcon()}
-              Appearance
+              {ts.appearanceTitle}
             </CardTitle>
             <CardDescription>
-              Customize the look and feel of your dashboard
+              {ts.appearanceDescription}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 bg-[hsl(var(--panel))]">
             <div className="flex items-center justify-between">
               <div>
-                <Label>Theme</Label>
+                <Label>{ts.theme}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Choose your preferred color scheme
+                  {ts.themeHint}
                 </p>
               </div>
               <Select value={theme} onValueChange={setTheme}>
@@ -288,9 +288,9 @@ const Settings = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="system">System</SelectItem>
-                  <SelectItem value="light">Light</SelectItem>
-                  <SelectItem value="dark">Dark</SelectItem>
+                  <SelectItem value="system">{ts.themes.system}</SelectItem>
+                  <SelectItem value="light">{ts.themes.light}</SelectItem>
+                  <SelectItem value="dark">{ts.themes.dark}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -330,19 +330,19 @@ const Settings = () => {
           <CardHeader className="bg-[hsl(var(--panel))]">
             <CardTitle className="flex items-center gap-2">
               <Bell className="h-5 w-5" />
-              Notifications
-              <Badge variant="outline" className="ml-2 font-normal">Coming soon</Badge>
+              {ts.notificationsTitle}
+              <Badge variant="outline" className="ml-2 font-normal">{ts.comingSoon}</Badge>
             </CardTitle>
             <CardDescription>
-              This app doesn't send notifications yet, so these preferences aren't saved.
+              {ts.notificationsDescription}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 bg-[hsl(var(--panel))]">
             <div className="flex items-center justify-between">
               <div>
-                <Label>Email Notifications</Label>
+                <Label>{ts.emailNotifications}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Receive notifications via email
+                  {ts.emailNotificationsHint}
                 </p>
               </div>
               <Switch checked={notifications.email} disabled />
@@ -352,9 +352,9 @@ const Settings = () => {
 
             <div className="flex items-center justify-between">
               <div>
-                <Label>Desktop Notifications</Label>
+                <Label>{ts.desktopNotifications}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Show browser notifications
+                  {ts.desktopNotificationsHint}
                 </p>
               </div>
               <Switch checked={notifications.desktop} disabled />
@@ -364,9 +364,9 @@ const Settings = () => {
 
             <div className="flex items-center justify-between">
               <div>
-                <Label>Task Reminders</Label>
+                <Label>{ts.taskReminders}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Get reminded about upcoming task deadlines
+                  {ts.taskRemindersHint}
                 </p>
               </div>
               <Switch checked={notifications.taskReminders} disabled />
@@ -376,9 +376,9 @@ const Settings = () => {
 
             <div className="flex items-center justify-between">
               <div>
-                <Label>Absence Updates</Label>
+                <Label>{ts.absenceUpdates}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Notifications about absence request status
+                  {ts.absenceUpdatesHint}
                 </p>
               </div>
               <Switch checked={notifications.absenceUpdates} disabled />
@@ -391,22 +391,22 @@ const Settings = () => {
           <CardHeader className="bg-[hsl(var(--panel))]">
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-5 w-5" />
-              Security
+              {ts.securityTitle}
             </CardTitle>
             <CardDescription>
-              Manage your account security settings
+              {ts.securityDescription}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 bg-[hsl(var(--panel))]">
             <div className="flex items-center justify-between">
               <div>
-                <Label>Change Password</Label>
+                <Label>{ts.changePassword}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Update your account password
+                  {ts.changePasswordHint}
                 </p>
               </div>
               <Button variant="outline" size="sm" onClick={() => setShowPasswordDialog(true)}>
-                Change Password
+                {ts.changePassword}
               </Button>
             </div>
 
@@ -415,15 +415,15 @@ const Settings = () => {
             <div className="flex items-center justify-between">
               <div>
                 <Label className="flex items-center gap-2">
-                  Two-Factor Authentication
-                  <Badge variant="outline" className="font-normal">Coming soon</Badge>
+                  {ts.twoFactor}
+                  <Badge variant="outline" className="font-normal">{ts.comingSoon}</Badge>
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                  Add an extra layer of security to your account
+                  {ts.twoFactorHint}
                 </p>
               </div>
               <Button variant="outline" size="sm" disabled>
-                Enable 2FA
+                {ts.enable2fa}
               </Button>
             </div>
           </CardContent>
@@ -433,23 +433,23 @@ const Settings = () => {
       <Dialog open={showPasswordDialog} onOpenChange={(open) => { setShowPasswordDialog(open); if (!open) { setNewPassword(''); setConfirmPassword(''); } }}>
         <DialogContent className="sm:max-w-md bg-[hsl(var(--panel))]">
           <DialogHeader>
-            <DialogTitle>Change Password</DialogTitle>
-            <DialogDescription>Choose a new password for your account.</DialogDescription>
+            <DialogTitle>{ts.changePassword}</DialogTitle>
+            <DialogDescription>{ts.passwordDialogDescription}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-2">
-              <Label htmlFor="new-password">New password</Label>
+              <Label htmlFor="new-password">{ts.newPassword}</Label>
               <Input id="new-password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="••••••" autoComplete="new-password" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirm new password</Label>
+              <Label htmlFor="confirm-password">{ts.confirmPassword}</Label>
               <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••" autoComplete="new-password" />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPasswordDialog(false)} disabled={passwordSaving}>Cancel</Button>
+            <Button variant="outline" onClick={() => setShowPasswordDialog(false)} disabled={passwordSaving}>{t.common.cancel}</Button>
             <Button onClick={handleChangePassword} disabled={passwordSaving}>
-              {passwordSaving ? 'Saving...' : 'Update Password'}
+              {passwordSaving ? t.common.saving : ts.updatePassword}
             </Button>
           </DialogFooter>
         </DialogContent>

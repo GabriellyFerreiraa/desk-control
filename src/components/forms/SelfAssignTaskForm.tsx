@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -11,13 +11,10 @@ import { toast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-const schema = z.object({
-  title: z.string().min(3, 'Title must be at least 3 characters'),
-  description: z.string().optional(),
-  priority: z.number().min(1).max(5),
-  dueDate: z.string().optional()
-});
-type FormData = z.infer<typeof schema>;
+import { useT } from '@/i18n/lang';
+
+const PRIORITIES = [1, 2, 3, 4, 5];
+
 interface SelfAssignTaskFormProps {
   onClose: () => void;
   onSuccess: () => void;
@@ -30,6 +27,15 @@ export const SelfAssignTaskForm = ({
   const {
     user
   } = useAuth();
+  const t = useT();
+  const tf = t.taskForm;
+  const schema = useMemo(() => z.object({
+    title: z.string().min(3, tf.errors.titleMin),
+    description: z.string().optional(),
+    priority: z.number().min(1).max(5),
+    dueDate: z.string().optional()
+  }), [tf]);
+  type FormData = z.infer<typeof schema>;
   const {
     register,
     handleSubmit,
@@ -63,15 +69,15 @@ export const SelfAssignTaskForm = ({
       } = await supabase.from('tasks').insert(taskData);
       if (error) throw error;
       toast({
-        title: 'Task Self-assigned',
-        description: 'Your task has been created successfully'
+        title: tf.selfCreated,
+        description: tf.selfCreatedBody
       });
       onSuccess();
     } catch (error) {
       console.error('Error self-assigning task:', error);
       toast({
-        title: 'Error',
-        description: 'Could not create the task',
+        title: t.common.error,
+        description: tf.createFailed,
         variant: 'destructive'
       });
     } finally {
@@ -81,51 +87,47 @@ export const SelfAssignTaskForm = ({
   return <Dialog open onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md bg-[hsl(var(--panel))]">
         <DialogHeader>
-          <DialogTitle>Self-assign Task</DialogTitle>
-          <DialogDescription>Create a task for yourself</DialogDescription>
+          <DialogTitle>{tf.selfTitle}</DialogTitle>
+          <DialogDescription>{tf.selfDescription}</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Task Title</Label>
-            <Input id="title" placeholder="Descriptive task title" {...register('title')} />
+            <Label htmlFor="title">{tf.title}</Label>
+            <Input id="title" placeholder={tf.titlePlaceholder} {...register('title')} />
             {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description (optional)</Label>
-            <Textarea id="description" placeholder="Additional details about the task..." {...register('description')} />
+            <Label htmlFor="description">{tf.description}</Label>
+            <Textarea id="description" placeholder={tf.descriptionPlaceholder} {...register('description')} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="priority">Priority</Label>
+              <Label htmlFor="priority">{tf.priority}</Label>
               <Select onValueChange={value => setValue('priority', parseInt(value))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Priority" />
+                <SelectTrigger id="priority">
+                  <SelectValue placeholder={tf.priority} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">1 - Low</SelectItem>
-                  <SelectItem value="2">2 - Normal</SelectItem>
-                  <SelectItem value="3">3 - Medium</SelectItem>
-                  <SelectItem value="4">4 - High</SelectItem>
-                  <SelectItem value="5">5 - Critical</SelectItem>
+                  {PRIORITIES.map((p) => <SelectItem key={p} value={String(p)}>{tf.priorities[p]}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="dueDate">Due Date (optional)</Label>
+              <Label htmlFor="dueDate">{tf.dueDate}</Label>
               <Input id="dueDate" type="datetime-local" {...register('dueDate')} />
             </div>
           </div>
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              {t.common.cancel}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Creating...' : 'Create Task'}
+              {isLoading ? tf.creating : tf.create}
             </Button>
           </div>
         </form>

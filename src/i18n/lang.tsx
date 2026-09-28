@@ -1,9 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { DEFAULT_LANG, Dict, Lang, STRINGS, isLang } from './strings';
-
-const STORAGE_KEY = 'deskcontrol-lang';
+import { Dict, Lang, STRINGS, isLang } from './strings';
+import { readStoredLang, storeLang } from './storage';
 
 interface LangContextType {
   lang: Lang;
@@ -11,15 +10,6 @@ interface LangContextType {
 }
 
 const LangContext = createContext<LangContextType | undefined>(undefined);
-
-const readStoredLang = (): Lang => {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return isLang(stored) ? stored : DEFAULT_LANG;
-  } catch {
-    return DEFAULT_LANG;
-  }
-};
 
 // The saved profile language wins once the user is signed in, so the
 // choice follows them across devices. localStorage covers the moments
@@ -36,11 +26,7 @@ export const LangProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     document.documentElement.lang = lang;
-    try {
-      localStorage.setItem(STORAGE_KEY, lang);
-    } catch {
-      // Storage can be unavailable (private mode); the in-memory value still works.
-    }
+    storeLang(lang);
   }, [lang]);
 
   const setLang = useCallback(async (next: Lang) => {

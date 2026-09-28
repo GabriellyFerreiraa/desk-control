@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -11,14 +11,10 @@ import { toast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-const schema = z.object({
-  title: z.string().min(3, 'Title must be at least 3 characters'),
-  description: z.string().optional(),
-  assignedTo: z.string().min(1, 'You must select an analyst'),
-  priority: z.number().min(1).max(5),
-  dueDate: z.string().optional()
-});
-type FormData = z.infer<typeof schema>;
+import { useT } from '@/i18n/lang';
+
+const PRIORITIES = [1, 2, 3, 4, 5];
+
 interface TaskAssignmentFormProps {
   analysts: any[];
   onClose: () => void;
@@ -33,6 +29,16 @@ export const TaskAssignmentForm = ({
   const {
     user
   } = useAuth();
+  const t = useT();
+  const tf = t.taskForm;
+  const schema = useMemo(() => z.object({
+    title: z.string().min(3, tf.errors.titleMin),
+    description: z.string().optional(),
+    assignedTo: z.string().min(1, tf.errors.analystRequired),
+    priority: z.number().min(1).max(5),
+    dueDate: z.string().optional()
+  }), [tf]);
+  type FormData = z.infer<typeof schema>;
   const {
     register,
     handleSubmit,
@@ -66,15 +72,15 @@ export const TaskAssignmentForm = ({
       } = await supabase.from('tasks').insert(taskData);
       if (error) throw error;
       toast({
-        title: "Task Assigned",
-        description: "The task has been assigned successfully"
+        title: tf.assigned,
+        description: tf.assignedBody
       });
       onSuccess();
     } catch (error) {
       console.error('Error creating task:', error);
       toast({
-        title: "Error",
-        description: "Could not assign the task",
+        title: t.common.error,
+        description: tf.assignFailed,
         variant: "destructive"
       });
     } finally {
@@ -84,29 +90,29 @@ export const TaskAssignmentForm = ({
   return <Dialog open onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md bg-[hsl(var(--panel))]">
         <DialogHeader>
-          <DialogTitle>Assign New Task</DialogTitle>
+          <DialogTitle>{tf.assignTitle}</DialogTitle>
           <DialogDescription>
-            Assign a new task to a team analyst
+            {tf.assignDescription}
           </DialogDescription>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Task Title</Label>
-            <Input id="title" placeholder="Descriptive task title" {...register('title')} />
+            <Label htmlFor="title">{tf.title}</Label>
+            <Input id="title" placeholder={tf.titlePlaceholder} {...register('title')} />
             {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
           </div>
-          
+
           <div className="space-y-2">
-            <Label htmlFor="description">Description (optional)</Label>
-            <Textarea id="description" placeholder="Additional details about the task..." {...register('description')} />
+            <Label htmlFor="description">{tf.description}</Label>
+            <Textarea id="description" placeholder={tf.descriptionPlaceholder} {...register('description')} />
           </div>
-          
+
           <div className="space-y-2">
-            <Label>Assign to</Label>
+            <Label htmlFor="assignedTo">{tf.assignTo}</Label>
             <Select onValueChange={value => setValue('assignedTo', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select an analyst" />
+              <SelectTrigger id="assignedTo">
+                <SelectValue placeholder={tf.selectAnalyst} />
               </SelectTrigger>
               <SelectContent>
                 {analysts.map(analyst => <SelectItem key={analyst.user_id} value={analyst.user_id}>
@@ -117,37 +123,33 @@ export const TaskAssignmentForm = ({
             <input type="hidden" {...register('assignedTo')} />
             {errors.assignedTo && <p className="text-sm text-destructive">{errors.assignedTo.message}</p>}
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="priority">Priority</Label>
+              <Label htmlFor="priority">{tf.priority}</Label>
               <Select onValueChange={value => setValue('priority', parseInt(value))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Priority" />
+                <SelectTrigger id="priority">
+                  <SelectValue placeholder={tf.priority} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">1 - Low</SelectItem>
-                  <SelectItem value="2">2 - Normal</SelectItem>
-                  <SelectItem value="3">3 - Medium</SelectItem>
-                  <SelectItem value="4">4 - High</SelectItem>
-                  <SelectItem value="5">5 - Critical</SelectItem>
+                  {PRIORITIES.map((p) => <SelectItem key={p} value={String(p)}>{tf.priorities[p]}</SelectItem>)}
                 </SelectContent>
               </Select>
               <input type="hidden" {...register('priority', { valueAsNumber: true })} />
             </div>
-            
+
             <div className="space-y-2">
-              <Label htmlFor="dueDate">Due Date (optional)</Label>
+              <Label htmlFor="dueDate">{tf.dueDate}</Label>
               <Input id="dueDate" type="datetime-local" {...register('dueDate')} />
             </div>
           </div>
-          
+
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              {t.common.cancel}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Assigning...' : 'Assign Task'}
+              {isLoading ? tf.assigning : tf.assign}
             </Button>
           </div>
         </form>

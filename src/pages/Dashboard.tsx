@@ -24,13 +24,13 @@ const Dashboard = () => {
   if (!userProfile) {
     return <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Profile not found</h1>
+          <h1 className="text-2xl font-bold mb-4">{t.profileMissing.title}</h1>
           <p className="text-muted-foreground mb-4">
-            Please contact the administrator to set up your profile.
+            {t.profileMissing.body}
           </p>
           <Button onClick={signOut}>
             <LogOut className="mr-2 h-4 w-4" />
-            Sign Out
+            {t.profileMissing.signOut}
           </Button>
         </div>
       </div>;

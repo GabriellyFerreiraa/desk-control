@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -11,19 +11,12 @@ import { toast } from '@/hooks/use-toast';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useT } from '@/i18n/lang';
+
+// Stored as-is in absence_requests.reason ("<reason> - <details>"), so the
+// values stay in English; only the labels are translated.
 const absenceReasons = ['Service Desk Day', 'Examen Leave', 'Recognition (ScoreCard)', 'Vacation Leave', 'Moving Leave', 'Sick Leave', 'Marriage Leave', 'Unpaid Leave'] as const;
-const schema = z.object({
-  startDate: z.string().min(1, 'Start date is required'),
-  endDate: z.string().min(1, 'End date is required'),
-  reason: z.enum(absenceReasons).refine(val => absenceReasons.includes(val), {
-    message: 'Please select a valid reason'
-  }),
-  details: z.string().min(10, 'Details must be at least 10 characters')
-}).refine(data => new Date(data.endDate) >= new Date(data.startDate), {
-  message: "End date must be after or equal to start date",
-  path: ["endDate"]
-});
-type FormData = z.infer<typeof schema>;
+
 interface AbsenceRequestFormProps {
   onClose: () => void;
   onSuccess: () => void;
@@ -36,6 +29,18 @@ export const AbsenceRequestForm = ({
   const {
     user
   } = useAuth();
+  const t = useT();
+  const tf = t.absenceForm;
+  const schema = useMemo(() => z.object({
+    startDate: z.string().min(1, tf.errors.startRequired),
+    endDate: z.string().min(1, tf.errors.endRequired),
+    reason: z.enum(absenceReasons, { message: tf.errors.reasonRequired }),
+    details: z.string().min(10, tf.errors.detailsMin)
+  }).refine(data => data.endDate >= data.startDate, {
+    message: tf.errors.endBeforeStart,
+    path: ["endDate"]
+  }), [tf]);
+  type FormData = z.infer<typeof schema>;
   const {
     register,
     handleSubmit,
@@ -66,15 +71,15 @@ export const AbsenceRequestForm = ({
       });
       if (error) throw error;
       toast({
-        title: "Request submitted",
-        description: "Your absence request has been submitted for review"
+        title: tf.submitted,
+        description: tf.submittedBody
       });
       onSuccess();
     } catch (error) {
       console.error('Error creating absence request:', error);
       toast({
-        title: "Error",
-        description: "Could not submit request",
+        title: t.common.error,
+        description: tf.submitFailed,
         variant: "destructive"
       });
     } finally {
@@ -84,56 +89,56 @@ export const AbsenceRequestForm = ({
   return <Dialog open onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md bg-[hsl(var(--panel))]">
         <DialogHeader>
-          <DialogTitle>New Absence Request</DialogTitle>
+          <DialogTitle>{tf.title}</DialogTitle>
           <DialogDescription>
-            Complete the form to submit your absence request
+            {tf.description}
           </DialogDescription>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="startDate">Start Date</Label>
+              <Label htmlFor="startDate">{tf.startDate}</Label>
               <Input id="startDate" type="date" {...register("startDate")} />
               {errors.startDate && <p className="text-sm text-destructive">{errors.startDate.message}</p>}
             </div>
-            
+
             <div className="space-y-2">
-              <Label htmlFor="endDate">End Date</Label>
+              <Label htmlFor="endDate">{tf.endDate}</Label>
               <Input id="endDate" type="date" {...register("endDate")} />
               {errors.endDate && <p className="text-sm text-destructive">{errors.endDate.message}</p>}
             </div>
           </div>
-          
+
           <div className="space-y-2">
-            <Label htmlFor="reason">Reason</Label>
+            <Label htmlFor="reason">{tf.reason}</Label>
             <Controller name="reason" control={control} render={({
             field
           }) => <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select absence reason" />
+                  <SelectTrigger id="reason">
+                    <SelectValue placeholder={tf.reasonPlaceholder} />
                   </SelectTrigger>
                   <SelectContent>
                     {absenceReasons.map(reason => <SelectItem key={reason} value={reason}>
-                        {reason}
+                        {tf.reasons[reason] ?? reason}
                       </SelectItem>)}
                   </SelectContent>
                 </Select>} />
             {errors.reason && <p className="text-sm text-destructive">{errors.reason.message}</p>}
           </div>
-          
+
           <div className="space-y-2">
-            <Label htmlFor="details">Details</Label>
-            <Textarea id="details" placeholder="Provide additional details about your absence request..." {...register("details")} />
+            <Label htmlFor="details">{tf.details}</Label>
+            <Textarea id="details" placeholder={tf.detailsPlaceholder} {...register("details")} />
             {errors.details && <p className="text-sm text-destructive">{errors.details.message}</p>}
           </div>
-          
+
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              {t.common.cancel}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Submitting...' : 'Submit Request'}
+              {isLoading ? tf.submitting : tf.submit}
             </Button>
           </div>
         </form>

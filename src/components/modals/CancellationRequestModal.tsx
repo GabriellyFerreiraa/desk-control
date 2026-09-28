@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useT } from '@/i18n/lang';
 
 interface CancellationRequestModalProps {
   onClose: () => void;
@@ -10,6 +11,8 @@ interface CancellationRequestModalProps {
 }
 
 export const CancellationRequestModal = ({ onClose, onConfirm }: CancellationRequestModalProps) => {
+  const t = useT();
+  const tc = t.cancelModal;
   const [reason, setReason] = useState('');
 
   const handleConfirm = () => {
@@ -21,28 +24,28 @@ export const CancellationRequestModal = ({ onClose, onConfirm }: CancellationReq
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="sm:max-w-lg bg-[hsl(var(--panel))]">
         <DialogHeader>
-          <DialogTitle>Request Cancellation</DialogTitle>
+          <DialogTitle>{tc.title}</DialogTitle>
           <DialogDescription>
-            Please provide a brief reason to request cancellation of this approved absence.
+            {tc.description}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
           <div className="space-y-2">
-            <Label htmlFor="cancel-reason">Reason</Label>
+            <Label htmlFor="cancel-reason">{tc.reason}</Label>
             <Textarea
               id="cancel-reason"
-              placeholder="Explain why you need to cancel this absence..."
+              placeholder={tc.placeholder}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={4}
             />
-            <p className="text-xs text-muted-foreground">This will be visible to your lead.</p>
+            <p className="text-xs text-muted-foreground">{tc.visibleToLead}</p>
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={onClose}>Cancel</Button>
-            <Button onClick={handleConfirm} disabled={!reason.trim()}>Submit Request</Button>
+            <Button variant="outline" onClick={onClose}>{t.common.cancel}</Button>
+            <Button onClick={handleConfirm} disabled={!reason.trim()}>{tc.submit}</Button>
           </div>
         </div>
       </DialogContent>

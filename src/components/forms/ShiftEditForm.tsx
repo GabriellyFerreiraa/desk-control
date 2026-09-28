@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -12,15 +12,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-const shiftFormSchema = z.object({
-  start_time: z.string().min(1, 'Start time is required'),
-  end_time: z.string().min(1, 'End time is required'),
-  lunch_start: z.string().min(1, 'Lunch start time is required'),
-  lunch_end: z.string().min(1, 'Lunch end time is required'),
-  break1_start: z.string().min(1, 'Break 1 start time is required'),
-  break1_end: z.string().min(1, 'Break 1 end time is required'),
-  break2_start: z.string().min(1, 'Break 2 start time is required'),
-  break2_end: z.string().min(1, 'Break 2 end time is required'),
+import { useT } from '@/i18n/lang';
+// Built per language so the validation message follows the selected language.
+const makeShiftSchema = (required: string) => z.object({
+  start_time: z.string().min(1, required),
+  end_time: z.string().min(1, required),
+  lunch_start: z.string().min(1, required),
+  lunch_end: z.string().min(1, required),
+  break1_start: z.string().min(1, required),
+  break1_end: z.string().min(1, required),
+  break2_start: z.string().min(1, required),
+  break2_end: z.string().min(1, required),
   work_days: z.object({
     mon: z.object({
       active: z.boolean(),
@@ -52,7 +54,7 @@ const shiftFormSchema = z.object({
     })
   })
 });
-type ShiftFormData = z.infer<typeof shiftFormSchema>;
+type ShiftFormData = z.infer<ReturnType<typeof makeShiftSchema>>;
 interface ShiftEditFormProps {
   analyst: any;
   onClose: () => void;
@@ -64,6 +66,9 @@ export const ShiftEditForm = ({
   onSuccess
 }: ShiftEditFormProps) => {
   const [loading, setLoading] = useState(false);
+  const t = useT();
+  const ts = t.shiftForm;
+  const shiftFormSchema = useMemo(() => makeShiftSchema(ts.required), [ts]);
   const form = useForm<ShiftFormData>({
     resolver: zodResolver(shiftFormSchema),
     defaultValues: {
@@ -125,47 +130,26 @@ export const ShiftEditForm = ({
       }).eq('user_id', analyst.user_id);
       if (error) throw error;
       toast({
-        title: "Success",
-        description: "Shift schedule updated successfully"
+        title: ts.saved,
+        description: ts.savedBody
       });
       onSuccess();
     } catch (error) {
       console.error('Error updating shift:', error);
       toast({
-        title: "Error",
-        description: "Could not update shift schedule",
+        title: t.common.error,
+        description: ts.saveFailed,
         variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
-  const days = [{
-    key: 'mon',
-    label: 'Monday'
-  }, {
-    key: 'tue',
-    label: 'Tuesday'
-  }, {
-    key: 'wed',
-    label: 'Wednesday'
-  }, {
-    key: 'thu',
-    label: 'Thursday'
-  }, {
-    key: 'fri',
-    label: 'Friday'
-  }, {
-    key: 'sat',
-    label: 'Saturday'
-  }, {
-    key: 'sun',
-    label: 'Sunday'
-  }];
+  const days = (['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const).map((key) => ({ key, label: ts.days[key] }));
   return <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-[hsl(var(--panel))]">
         <DialogHeader>
-          <DialogTitle>Edit Shift Schedule - {analyst.name}</DialogTitle>
+          <DialogTitle>{ts.title(analyst.name)}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -173,13 +157,13 @@ export const ShiftEditForm = ({
             {/* Work Hours */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Work Hours</CardTitle>
+                <CardTitle className="text-lg">{ts.workHours}</CardTitle>
               </CardHeader>
               <CardContent className="grid grid-cols-2 gap-4">
                 <FormField control={form.control} name="start_time" render={({
                 field
               }) => <FormItem>
-                      <FormLabel>Start Time</FormLabel>
+                      <FormLabel>{ts.startTime}</FormLabel>
                       <FormControl>
                          <Input type="time" {...field} />
                       </FormControl>
@@ -189,7 +173,7 @@ export const ShiftEditForm = ({
                 <FormField control={form.control} name="end_time" render={({
                 field
               }) => <FormItem>
-                      <FormLabel>End Time</FormLabel>
+                      <FormLabel>{ts.endTime}</FormLabel>
                       <FormControl>
                          <Input type="time" {...field} />
                       </FormControl>
@@ -201,13 +185,13 @@ export const ShiftEditForm = ({
             {/* Lunch Hours */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Lunch Break</CardTitle>
+                <CardTitle className="text-lg">{ts.lunchBreak}</CardTitle>
               </CardHeader>
               <CardContent className="grid grid-cols-2 gap-4">
                 <FormField control={form.control} name="lunch_start" render={({
                 field
               }) => <FormItem>
-                      <FormLabel>Lunch Start</FormLabel>
+                      <FormLabel>{ts.lunchStart}</FormLabel>
                       <FormControl>
                          <Input type="time" {...field} />
                       </FormControl>
@@ -217,7 +201,7 @@ export const ShiftEditForm = ({
                 <FormField control={form.control} name="lunch_end" render={({
                 field
               }) => <FormItem>
-                      <FormLabel>Lunch End</FormLabel>
+                      <FormLabel>{ts.lunchEnd}</FormLabel>
                       <FormControl>
                          <Input type="time" {...field} />
                       </FormControl>
@@ -229,14 +213,14 @@ export const ShiftEditForm = ({
             {/* Break Times */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Break Times</CardTitle>
+                <CardTitle className="text-lg">{ts.breakTimes}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <FormField control={form.control} name="break1_start" render={({
                   field
                 }) => <FormItem>
-                        <FormLabel>Break 1 Start</FormLabel>
+                        <FormLabel>{ts.break1Start}</FormLabel>
                         <FormControl>
                            <Input type="time" {...field} />
                         </FormControl>
@@ -246,7 +230,7 @@ export const ShiftEditForm = ({
                   <FormField control={form.control} name="break1_end" render={({
                   field
                 }) => <FormItem>
-                        <FormLabel>Break 1 End</FormLabel>
+                        <FormLabel>{ts.break1End}</FormLabel>
                         <FormControl>
                            <Input type="time" {...field} />
                         </FormControl>
@@ -258,7 +242,7 @@ export const ShiftEditForm = ({
                   <FormField control={form.control} name="break2_start" render={({
                   field
                 }) => <FormItem>
-                        <FormLabel>Break 2 Start</FormLabel>
+                        <FormLabel>{ts.break2Start}</FormLabel>
                         <FormControl>
                            <Input type="time" {...field} />
                         </FormControl>
@@ -268,7 +252,7 @@ export const ShiftEditForm = ({
                   <FormField control={form.control} name="break2_end" render={({
                   field
                 }) => <FormItem>
-                        <FormLabel>Break 2 End</FormLabel>
+                        <FormLabel>{ts.break2End}</FormLabel>
                         <FormControl>
                           <Input type="time" {...field} />
                         </FormControl>
@@ -281,7 +265,7 @@ export const ShiftEditForm = ({
             {/* Work Days */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Work Schedule</CardTitle>
+                <CardTitle className="text-lg">{ts.workSchedule}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {days.map(day => <div key={day.key} className="flex items-center justify-between p-3 border rounded-lg">
@@ -292,7 +276,7 @@ export const ShiftEditForm = ({
                             <FormControl>
                               <Switch checked={field.value} onCheckedChange={field.onChange} />
                             </FormControl>
-                            <Label className="min-w-[80px]">{day.label}</Label>
+                            <Label className="min-w-[90px]">{day.label}</Label>
                           </FormItem>} />
                     </div>
 
@@ -301,12 +285,12 @@ export const ShiftEditForm = ({
                 }) => <FormItem>
                           <FormControl>
                             <Select value={field.value} onValueChange={field.onChange} disabled={!form.watch(`work_days.${day.key}.active` as any)}>
-                              <SelectTrigger className="w-24">
+                              <SelectTrigger className="w-32">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="office">Office</SelectItem>
-                                <SelectItem value="home">Home</SelectItem>
+                                <SelectItem value="office">{t.workMode.office}</SelectItem>
+                                <SelectItem value="home">{t.workMode.home}</SelectItem>
                               </SelectContent>
                             </Select>
                           </FormControl>
@@ -317,10 +301,10 @@ export const ShiftEditForm = ({
 
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
+                {t.common.cancel}
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? 'Saving...' : 'Save Changes'}
+                {loading ? t.common.saving : ts.saveChanges}
               </Button>
             </div>
           </form>

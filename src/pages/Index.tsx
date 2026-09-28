@@ -1,12 +1,23 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, Users, Clock, Calendar, ArrowRight } from 'lucide-react';
+import { Shield, Users, Clock, Calendar, ArrowRight, GraduationCap } from 'lucide-react';
+import { LangSwitch } from '@/components/LangSwitch';
+import { useT } from '@/i18n/lang';
 const Index = () => {
+  const t = useT();
+  const tl = t.landing;
+  const features = [
+    { icon: Calendar, title: tl.features.absencesTitle, text: tl.features.absencesText },
+    { icon: Users, title: tl.features.tasksTitle, text: tl.features.tasksText },
+    { icon: Clock, title: tl.features.shiftsTitle, text: tl.features.shiftsText },
+    { icon: GraduationCap, title: tl.features.learningTitle, text: tl.features.learningText },
+  ];
   return <div className="min-h-screen bg-background landing-theme force-light">
       {/* Hero Section */}
       <div className="relative">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/5 to-background" />
+        <LangSwitch className="absolute top-4 right-4 z-10" />
         <div className="relative">
           <div className="container mx-auto px-4 py-20">
             <div className="text-center max-w-3xl mx-auto">
@@ -18,21 +29,20 @@ const Index = () => {
                   DeskControl
                 </h1>
                 <p className="text-xl text-muted-foreground mb-8">
-                  Comprehensive management system for Service Desk analysts. 
-                  Manage absences, assign tasks and supervise your team efficiently.
+                  {tl.hero}
                 </p>
               </div>
-              
+
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button asChild size="lg" className="text-lg px-8 py-6">
                   <Link to="/auth">
-                    Get Started
+                    {tl.getStarted}
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="lg" className="text-lg px-8 py-6">
                   <Link to="/auth">
-                    Sign In
+                    {tl.signIn}
                   </Link>
                 </Button>
               </div>
@@ -44,49 +54,22 @@ const Index = () => {
       {/* Features Section */}
       <div className="container mx-auto px-4 py-20">
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold mb-4">Main Features</h2>
+          <h2 className="text-3xl font-bold mb-4">{tl.featuresTitle}</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            A complete solution for Service Desk team management with specialized 
-            tools for analysts and leads.
+            {tl.featuresText}
           </p>
         </div>
-        
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <Card className="border-2 hover:border-primary/50 transition-colors">
-            <CardHeader className="bg-muted/40">
-              <div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <Calendar className="h-6 w-6 text-primary" />
-              </div>
-              <CardTitle>Absence Management</CardTitle>
-              <CardDescription>
-                Request and approve absences efficiently with a commenting and tracking system.
-              </CardDescription>
-            </CardHeader>
-          </Card>
 
-          <Card className="border-2 hover:border-primary/50 transition-colors">
-            <CardHeader className="bg-muted/40">
-              <div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <Users className="h-6 w-6 text-primary" />
-              </div>
-              <CardTitle>Task Assignment</CardTitle>
-              <CardDescription>
-                Assign and supervise team tasks with priorities, deadlines and progress tracking.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="border-2 hover:border-primary/50 transition-colors">
-            <CardHeader className="bg-muted/40">
-              <div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <Clock className="h-6 w-6 text-primary" />
-              </div>
-              <CardTitle>Shift Control</CardTitle>
-              <CardDescription>
-                Manage schedules, work modalities (office/home) and visualize team status.
-              </CardDescription>
-            </CardHeader>
-          </Card>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {features.map(({ icon: Icon, title, text }) => <Card key={title} className="border-2 hover:border-primary/50 transition-colors">
+              <CardHeader className="bg-muted/40 h-full">
+                <div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                  <Icon className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle>{title}</CardTitle>
+                <CardDescription>{text}</CardDescription>
+              </CardHeader>
+            </Card>)}
         </div>
       </div>
 
@@ -94,46 +77,29 @@ const Index = () => {
       <div className="bg-muted/30 py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">Specialized Dashboards</h2>
+            <h2 className="text-3xl font-bold mb-4">{tl.dashboardsTitle}</h2>
             <p className="text-muted-foreground">
-              Different interfaces optimized for each role in your team.
+              {tl.dashboardsText}
             </p>
           </div>
-          
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <Card className="p-8 bg-muted/40">
-              <CardHeader className="text-center">
-                <CardTitle className="text-2xl mb-4">Analyst Dashboard</CardTitle>
-                <CardDescription>
-                  Tools to manage your daily work efficiently.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm">
-                  <li>• View absence requests</li>
-                  <li>• Manage assigned tasks</li>
-                  <li>• See current shift and modality</li>
-                  <li>• Real-time team status</li>
-                </ul>
-              </CardContent>
-            </Card>
 
-            <Card className="p-8 bg-muted/40">
-              <CardHeader className="text-center">
-                <CardTitle className="text-2xl mb-4">Lead Dashboard</CardTitle>
-                <CardDescription>
-                  Complete control to supervise and manage your team.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm">
-                  <li>• Approve/reject absences</li>
-                  <li>• Assign tasks to analysts</li>
-                  <li>• Manage team schedules</li>
-                  <li>• Absence calendar</li>
-                </ul>
-              </CardContent>
-            </Card>
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {[
+              { title: tl.analystTitle, text: tl.analystText, items: tl.analystItems },
+              { title: tl.leadTitle, text: tl.leadText, items: tl.leadItems },
+            ].map((role) => <Card key={role.title} className="p-8 bg-muted/40">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-2xl mb-4">{role.title}</CardTitle>
+                  <CardDescription>
+                    {role.text}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2 text-sm">
+                    {role.items.map((item) => <li key={item}>• {item}</li>)}
+                  </ul>
+                </CardContent>
+              </Card>)}
           </div>
         </div>
       </div>
@@ -141,14 +107,13 @@ const Index = () => {
       {/* CTA Section */}
       <div className="py-20 bg-muted/40">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to optimize your Service Desk?</h2>
+          <h2 className="text-3xl font-bold mb-4">{tl.ctaTitle}</h2>
           <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Start using DeskControl today and transform your team management with 
-            professional tools and an intuitive interface.
+            {tl.ctaText}
           </p>
           <Button asChild size="lg" className="text-lg px-8 py-6">
             <Link to="/auth">
-              Get Started Now
+              {tl.ctaButton}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>

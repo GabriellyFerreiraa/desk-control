@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { formatDistanceToNow, type Locale } from 'date-fns';
-import { enUS, es, ptBR } from 'date-fns/locale';
+import { formatDistanceToNow } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
@@ -9,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Bell, GraduationCap } from 'lucide-react';
 import { useLang, useT } from '@/i18n/lang';
-import type { Lang } from '@/i18n/strings';
+import { useDateLocale } from '@/i18n/dates';
 import { asLocalized, pickLocalized } from '@/lib/localized';
 
 interface NotificationRow {
@@ -21,7 +20,6 @@ interface NotificationRow {
 }
 
 const POLL_MS = 60_000;
-const DATE_LOCALES: Record<Lang, Locale> = { en: enUS, es, pt: ptBR };
 
 export const NotificationBell = () => {
   const { user } = useAuth();
@@ -29,6 +27,7 @@ export const NotificationBell = () => {
   const t = useT();
   const { lang } = useLang();
   const tn = t.notifications;
+  const locale = useDateLocale();
   const [items, setItems] = useState<NotificationRow[]>([]);
   const [open, setOpen] = useState(false);
 
@@ -127,7 +126,7 @@ export const NotificationBell = () => {
                   <span className="min-w-0">
                     <span className={`block text-sm ${n.read_at ? '' : 'font-medium'}`}>{describe(n)}</span>
                     <span className="block text-xs text-muted-foreground mt-0.5">
-                      {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: DATE_LOCALES[lang] })}
+                      {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale })}
                     </span>
                   </span>
                   {!n.read_at && <span className="ml-auto mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" aria-hidden />}

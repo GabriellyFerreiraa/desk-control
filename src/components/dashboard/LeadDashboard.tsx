@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, Users, CheckCircle, AlertCircle, Plus, Clock, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { parseDay, useDateLocale } from '@/i18n/dates';
 import { TaskAssignmentForm } from '@/components/forms/TaskAssignmentForm';
 import { AbsenceApprovalModal } from '@/components/modals/AbsenceApprovalModal';
 import { TeamCalendar } from '@/components/calendar/TeamCalendar';
@@ -21,6 +22,7 @@ export const LeadDashboard = () => {
     user
   } = useAuth();
   const t = useT();
+  const locale = useDateLocale();
   // ?tab=learning-progress opens the report (used by the notification bell).
   const [searchParams] = useSearchParams();
   const requestedTab = searchParams.get('tab');
@@ -82,8 +84,8 @@ export const LeadDashboard = () => {
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({
-        title: "Error",
-        description: "Could not load data",
+        title: t.common.error,
+        description: t.dashboard.loadFailed,
         variant: "destructive"
       });
     } finally {
@@ -101,15 +103,15 @@ export const LeadDashboard = () => {
       }).eq('id', requestId);
       if (error) throw error;
       toast({
-        title: "Request approved",
-        description: "The absence request has been approved"
+        title: t.absences.toasts.approved,
+        description: t.absences.toasts.approvedBody
       });
       fetchData(); // Refresh data
     } catch (error) {
       console.error('Error approving request:', error);
       toast({
-        title: "Error",
-        description: "Could not approve request",
+        title: t.common.error,
+        description: t.absences.toasts.approveFailed,
         variant: "destructive"
       });
     }
@@ -124,15 +126,15 @@ export const LeadDashboard = () => {
       }).eq('id', requestId);
       if (error) throw error;
       toast({
-        title: "Request rejected",
-        description: "The absence request has been rejected"
+        title: t.absences.toasts.rejected,
+        description: t.absences.toasts.rejectedBody
       });
       fetchData(); // Refresh data
     } catch (error) {
       console.error('Error rejecting request:', error);
       toast({
-        title: "Error",
-        description: "Could not reject request",
+        title: t.common.error,
+        description: t.absences.toasts.rejectFailed,
         variant: "destructive"
       });
     }
@@ -144,11 +146,11 @@ export const LeadDashboard = () => {
         .update({ status: 'cancelled', lead_comment: comment })
         .eq('id', requestId);
       if (error) throw error;
-      toast({ title: 'Cancellation approved', description: 'The absence has been canceled.' });
+      toast({ title: t.absences.toasts.cancellationApproved, description: t.absences.toasts.cancellationApprovedBody });
       fetchData();
     } catch (error) {
       console.error('Error approving cancellation:', error);
-      toast({ title: 'Error', description: 'Could not approve cancellation', variant: 'destructive' });
+      toast({ title: t.common.error, description: t.absences.toasts.cancellationApproveFailed, variant: 'destructive' });
     }
   };
   const rejectCancellation = async (requestId: string, comment: string) => {
@@ -158,15 +160,15 @@ export const LeadDashboard = () => {
         .update({ status: 'approved', lead_comment: comment })
         .eq('id', requestId);
       if (error) throw error;
-      toast({ title: 'Cancellation rejected', description: 'The absence remains approved.' });
+      toast({ title: t.absences.toasts.cancellationRejected, description: t.absences.toasts.cancellationRejectedBody });
       fetchData();
     } catch (error) {
       console.error('Error rejecting cancellation:', error);
-      toast({ title: 'Error', description: 'Could not reject cancellation', variant: 'destructive' });
+      toast({ title: t.common.error, description: t.absences.toasts.cancellationRejectFailed, variant: 'destructive' });
     }
   };
   const deleteAnalyst = async (analystId: string, analystName: string) => {
-    if (!confirm(`Are you sure you want to delete ${analystName}? This will permanently remove all their data including tasks and absence requests.`)) {
+    if (!confirm(t.team.deleteConfirm(analystName))) {
       return;
     }
     try {
@@ -179,15 +181,15 @@ export const LeadDashboard = () => {
       } = await supabase.from('profiles').delete().eq('user_id', analystId);
       if (error) throw error;
       toast({
-        title: "Analyst deleted",
-        description: `${analystName} has been successfully removed from the system`
+        title: t.team.deleted,
+        description: t.team.deletedBody(analystName)
       });
       fetchData(); // Refresh data
     } catch (error) {
       console.error('Error deleting analyst:', error);
       toast({
-        title: "Error",
-        description: "Could not delete analyst",
+        title: t.common.error,
+        description: t.team.deleteFailed,
         variant: "destructive"
       });
     }
@@ -198,17 +200,17 @@ export const LeadDashboard = () => {
   const getTaskStatusBadge = (status: string) => {
     const statusConfig = {
       pending: {
-        label: 'Pending',
+        label: t.tasks.status.pending,
         variant: 'secondary' as const,
         className: 'bg-orange-500 text-white'
       },
       in_progress: {
-        label: 'In progress',
+        label: t.tasks.status.in_progress,
         variant: 'default' as const,
         className: ''
       },
       completed: {
-        label: 'Completed',
+        label: t.tasks.status.completed,
         variant: 'success' as const,
         className: ''
       }
@@ -222,19 +224,19 @@ export const LeadDashboard = () => {
   const getAbsenceStatusBadge = (status: string) => {
     const statusConfig = {
       approved: {
-        label: 'Approved',
+        label: t.absences.status.approved,
         variant: 'success' as const
       },
       rejected: {
-        label: 'Rejected',
+        label: t.absences.status.rejected,
         variant: 'destructive' as const
       },
       cancelled: {
-        label: 'Cancelled',
+        label: t.absences.status.cancelled,
         variant: 'outline' as const
       },
       pending: {
-        label: 'Pending',
+        label: t.absences.status.pending,
         variant: 'secondary' as const
       }
     } as const;
@@ -268,14 +270,14 @@ export const LeadDashboard = () => {
   };
   const onlineAnalysts = getOnlineAnalysts();
   if (loading) {
-    return <div className="p-6">Loading dashboard...</div>;
+    return <div className="p-6">{t.dashboard.loading}</div>;
   }
   return <div className="space-y-6">
       {/* Quick Stats */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card onClick={() => setActiveTab('requests')} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setActiveTab('requests')} tabIndex={0} className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Requests</CardTitle>
+            <CardTitle className="text-sm font-medium">{t.dashboard.pendingRequests}</CardTitle>
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -285,7 +287,7 @@ export const LeadDashboard = () => {
 
         <Card onClick={() => setActiveTab('tasks')} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setActiveTab('tasks')} tabIndex={0} className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Tasks</CardTitle>
+            <CardTitle className="text-sm font-medium">{t.dashboard.activeTasks}</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -297,7 +299,7 @@ export const LeadDashboard = () => {
 
         <Card onClick={() => setActiveTab('team')} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setActiveTab('team')} tabIndex={0} className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Online Analysts</CardTitle>
+            <CardTitle className="text-sm font-medium">{t.dashboard.onlineAnalysts}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -307,7 +309,7 @@ export const LeadDashboard = () => {
 
         <Card onClick={() => setActiveTab('team')} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setActiveTab('team')} tabIndex={0} className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Analysts</CardTitle>
+            <CardTitle className="text-sm font-medium">{t.dashboard.totalAnalysts}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -318,11 +320,11 @@ export const LeadDashboard = () => {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="requests">Absence Requests</TabsTrigger>
-          <TabsTrigger value="tasks">Task Management</TabsTrigger>
-          <TabsTrigger value="team">Team</TabsTrigger>
-          <TabsTrigger value="reports">Reports</TabsTrigger>
+        <TabsList className="flex-wrap h-auto">
+          <TabsTrigger value="requests">{t.dashboard.tabs.absences}</TabsTrigger>
+          <TabsTrigger value="tasks">{t.dashboard.tabs.taskManagement}</TabsTrigger>
+          <TabsTrigger value="team">{t.dashboard.tabs.team}</TabsTrigger>
+          <TabsTrigger value="reports">{t.dashboard.tabs.reports}</TabsTrigger>
           <TabsTrigger value="learning-progress">{t.progress.tab}</TabsTrigger>
         </TabsList>
 
@@ -333,13 +335,13 @@ export const LeadDashboard = () => {
         <TabsContent value="requests" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Pending Absence Requests</CardTitle>
+              <CardTitle>{t.absences.pendingTitle}</CardTitle>
               <CardDescription>
-                Requests that require your approval
+                {t.absences.pendingDescription}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {pendingRequests.length === 0 ? <p className="text-center text-muted-foreground py-4">No pending requests</p> : <div className="space-y-4">
+              {pendingRequests.length === 0 ? <p className="text-center text-muted-foreground py-4">{t.absences.noPending}</p> : <div className="space-y-4">
                   {pendingRequests.map(request => <div key={request.id} className="p-4 border rounded-lg bg-[hsl(var(--panel))]">
                       <div className="flex justify-between items-start mb-2">
                         <div>
@@ -348,16 +350,16 @@ export const LeadDashboard = () => {
                             <h4 className="font-medium">{request.analyst_profile?.name}</h4>
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {format(new Date(request.start_date), 'PPP')} - {' '}
-                            {format(new Date(request.end_date), 'PPP')}
+                            {format(parseDay(request.start_date), 'PPP', { locale })} - {' '}
+                            {format(parseDay(request.end_date), 'PPP', { locale })}
                           </p>
                           <p className="text-sm mt-1">{request.reason}</p>
                         </div>
-                        <Badge variant="secondary" className="bg-orange-500">{request.status === 'cancel_requested' ? 'Cancellation requested' : 'Pending'}</Badge>
+                        <Badge variant="secondary" className="bg-orange-500">{request.status === 'cancel_requested' ? t.absences.status.cancel_requested : t.absences.status.pending}</Badge>
                       </div>
                       <div className="flex gap-2 mt-3">
                         <Button size="sm" onClick={() => setSelectedRequest(request)}>
-                          Review
+                          {t.absences.review}
                         </Button>
                       </div>
                     </div>)}
@@ -370,26 +372,26 @@ export const LeadDashboard = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle>Task Management</CardTitle>
+                <CardTitle>{t.tasks.managementTitle}</CardTitle>
                 <CardDescription>
-                  Assign and supervise team tasks
+                  {t.tasks.managementDescription}
                 </CardDescription>
               </div>
               <Button onClick={() => setShowTaskForm(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                Assign Task
+                {t.tasks.assign}
               </Button>
             </CardHeader>
             <CardContent>
               {allTasks.filter(task => task.status === 'pending').length === 0 ? <p className="text-center text-muted-foreground py-4">
-                  No pending tasks
+                  {t.tasks.noPending}
                 </p> : <div className="space-y-4">
                   {allTasks.filter(task => task.status === 'pending').map(task => <div key={task.id} className="p-4 border rounded-lg bg-[hsl(var(--panel))]">
                       <div className="flex justify-between items-start mb-2">
                         <div>
                           <h4 className="font-medium">{task.title}</h4>
                           <div className="text-sm text-muted-foreground flex items-center gap-2">
-                            <span>Assigned to:</span>
+                            <span>{t.tasks.assignedTo}</span>
                             <UserAvatar src={task.assigned_to_profile?.avatar_url} name={task.assigned_to_profile?.name} size="xs" />
                             <span>{task.assigned_to_profile?.name}</span>
                           </div>
@@ -400,12 +402,12 @@ export const LeadDashboard = () => {
                             {getTaskStatusBadge(task.status).label}
                           </Badge>
                           <Badge variant="outline">
-                            {task.assigned_by === task.assigned_to ? 'Self-assigned' : 'Lead-assigned'}
+                            {task.assigned_by === task.assigned_to ? t.tasks.selfAssigned : t.tasks.leadAssigned}
                           </Badge>
                         </div>
                       </div>
                       {task.due_date && <p className="text-xs text-muted-foreground">
-                          Due: {format(new Date(task.due_date), 'PPp')}
+                          {t.tasks.due(format(new Date(task.due_date), 'PPp', { locale }))}
                         </p>}
                     </div>)}
                 </div>}
@@ -416,29 +418,29 @@ export const LeadDashboard = () => {
         <TabsContent value="team" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>My Shift</CardTitle>
+              <CardTitle>{t.team.myShiftTitle}</CardTitle>
               <CardDescription>
-                Your own work schedule
+                {t.team.myShiftDescription}
               </CardDescription>
             </CardHeader>
             <CardContent>
               {myProfile ? <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="text-sm text-muted-foreground">
-                    <p>Schedule: {String(myProfile.start_time).slice(0, 5)} - {String(myProfile.end_time).slice(0, 5)}</p>
-                    <p>Lunch: {myProfile.lunch_start ? String(myProfile.lunch_start).slice(0, 5) : '—'} - {myProfile.lunch_end ? String(myProfile.lunch_end).slice(0, 5) : '—'}</p>
+                    <p>{t.team.schedule}: {String(myProfile.start_time).slice(0, 5)} - {String(myProfile.end_time).slice(0, 5)}</p>
+                    <p>{t.team.lunch}: {myProfile.lunch_start ? String(myProfile.lunch_start).slice(0, 5) : '-'} - {myProfile.lunch_end ? String(myProfile.lunch_end).slice(0, 5) : '-'}</p>
                   </div>
                   <Button size="sm" variant="outline" onClick={() => setSelectedAnalyst(myProfile)}>
-                    Edit My Schedule
+                    {t.team.editMySchedule}
                   </Button>
-                </div> : <p className="text-sm text-muted-foreground">Loading your schedule...</p>}
+                </div> : <p className="text-sm text-muted-foreground">{t.team.loadingSchedule}</p>}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Team Status</CardTitle>
+              <CardTitle>{t.team.statusTitle}</CardTitle>
               <CardDescription>
-                General view of the analyst team
+                {t.team.statusDescription}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -457,25 +459,25 @@ export const LeadDashboard = () => {
                            <div>
                              <p className="font-semibold text-base leading-tight">{analyst.name}</p>
                              <p className="text-xs text-muted-foreground/90">
-                               {isOnline ? 'Online' : 'Offline'}
+                               {isOnline ? t.team.online : t.team.offline}
                              </p>
                            </div>
                          </div>
                        </div>
                        {todaySchedule?.active && <div className="text-sm text-muted-foreground mb-3">
-                           <p>Schedule: {String(analyst.start_time).slice(0, 5)} - {String(analyst.end_time).slice(0, 5)}</p>
-                           <p>Mode: {todaySchedule.mode === 'home' ? 'Home' : 'Office'}</p>
+                           <p>{t.team.schedule}: {String(analyst.start_time).slice(0, 5)} - {String(analyst.end_time).slice(0, 5)}</p>
+                           <p>{t.team.mode}: {todaySchedule.mode === 'home' ? t.workMode.home : t.workMode.office}</p>
                          </div>}
                        {!todaySchedule?.active && <div className="text-sm text-muted-foreground mb-3">
-                           <p>Not scheduled today</p>
+                           <p>{t.team.notScheduled}</p>
                          </div>}
                         <div className="space-y-2">
                           <Button size="sm" variant="outline" onClick={() => setSelectedAnalyst(analyst)} className="w-full">
-                            Edit Schedule
+                            {t.team.editSchedule}
                           </Button>
                           <Button size="sm" variant="destructive" onClick={() => deleteAnalyst(analyst.user_id, analyst.name)} className="w-full">
                             <Trash2 className="h-4 w-4 mr-2" />
-                            Delete Analyst
+                            {t.team.deleteAnalyst}
                           </Button>
                         </div>
                      </div>;
@@ -488,17 +490,17 @@ export const LeadDashboard = () => {
         <TabsContent value="reports" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Completed Tasks</CardTitle>
-              <CardDescription>All tasks marked as completed</CardDescription>
+              <CardTitle>{t.tasks.completedTitle}</CardTitle>
+              <CardDescription>{t.tasks.completedAll}</CardDescription>
             </CardHeader>
             <CardContent>
-              {allTasks.filter(task => task.status === 'completed').length === 0 ? <p className="text-center text-muted-foreground py-4">No completed tasks</p> : <div className="space-y-4">
+              {allTasks.filter(task => task.status === 'completed').length === 0 ? <p className="text-center text-muted-foreground py-4">{t.tasks.noCompleted}</p> : <div className="space-y-4">
                   {allTasks.filter(task => task.status === 'completed').map(task => <div key={task.id} className="p-4 border rounded-lg bg-[hsl(var(--panel))]">
                         <div className="flex justify-between items-start mb-2">
                           <div>
                             <h4 className="font-medium">{task.title}</h4>
                             <div className="text-sm text-muted-foreground flex items-center gap-2">
-                              <span>Assigned to:</span>
+                              <span>{t.tasks.assignedTo}</span>
                               <UserAvatar src={task.assigned_to_profile?.avatar_url} name={task.assigned_to_profile?.name} size="xs" />
                               <span>{task.assigned_to_profile?.name}</span>
                             </div>
@@ -509,12 +511,12 @@ export const LeadDashboard = () => {
                               {getTaskStatusBadge(task.status).label}
                             </Badge>
                             <Badge variant="outline">
-                              {task.assigned_by === task.assigned_to ? 'Self-assigned' : 'Lead-assigned'}
+                              {task.assigned_by === task.assigned_to ? t.tasks.selfAssigned : t.tasks.leadAssigned}
                             </Badge>
                           </div>
                         </div>
                         {task.due_date && <p className="text-xs text-muted-foreground">
-                            Due: {format(new Date(task.due_date), 'PPp')}
+                            {t.tasks.due(format(new Date(task.due_date), 'PPp', { locale }))}
                           </p>}
                       </div>)}
                 </div>}
@@ -523,11 +525,11 @@ export const LeadDashboard = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>Processed Absence Requests</CardTitle>
-              <CardDescription>Approved, rejected or canceled</CardDescription>
+              <CardTitle>{t.absences.processedTitle}</CardTitle>
+              <CardDescription>{t.absences.processedDescription}</CardDescription>
             </CardHeader>
             <CardContent>
-              {processedRequests.length === 0 ? <p className="text-center text-muted-foreground py-4">No processed requests</p> : <div className="space-y-4">
+              {processedRequests.length === 0 ? <p className="text-center text-muted-foreground py-4">{t.absences.noProcessed}</p> : <div className="space-y-4">
                   {processedRequests.map(request => <div key={request.id} className="p-4 border rounded-lg bg-[hsl(var(--panel))]">
                       <div className="flex justify-between items-start mb-2">
                         <div>
@@ -536,8 +538,8 @@ export const LeadDashboard = () => {
                             <h4 className="font-medium">{request.analyst_profile?.name}</h4>
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {format(new Date(request.start_date), 'PPP')} - {' '}
-                            {format(new Date(request.end_date), 'PPP')}
+                            {format(parseDay(request.start_date), 'PPP', { locale })} - {' '}
+                            {format(parseDay(request.end_date), 'PPP', { locale })}
                           </p>
                           <p className="text-sm mt-1">{request.reason}</p>
                         </div>
@@ -547,7 +549,7 @@ export const LeadDashboard = () => {
                       </div>
                       {request.lead_comment && <div className="mt-3 p-3 bg-muted rounded">
                           <p className="text-sm">
-                            <strong>Lead Comment:</strong> {request.lead_comment}
+                            <strong>{t.absences.leadComment}</strong> {request.lead_comment}
                           </p>
                         </div>}
                     </div>)}
