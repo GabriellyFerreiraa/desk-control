@@ -735,6 +735,28 @@ export type Database = {
         }
         Returns: boolean
       }
+      learning_progress_report: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          analyst_id: string
+          analyst_name: string
+          attempts_by_module: Json
+          completed_at: string | null
+          course_id: string
+          course_title: Json
+          current_module: number | null
+          passed_modules: number
+          project_id: string
+          project_name: string
+          started_at: string | null
+          total_attempts: number
+          total_modules: number
+        }[]
+      }
+      mark_notifications_read: {
+        Args: { _ids?: string[] | null }
+        Returns: undefined
+      }
       learning_get_quiz: {
         Args: { _module_id: string }
         Returns: Json

@@ -13,10 +13,17 @@ import { AbsenceApprovalModal } from '@/components/modals/AbsenceApprovalModal';
 import { TeamCalendar } from '@/components/calendar/TeamCalendar';
 import { ShiftEditForm } from '@/components/forms/ShiftEditForm';
 import { UserAvatar } from '@/components/UserAvatar';
+import { ProgressReport } from '@/components/learning/ProgressReport';
+import { useSearchParams } from 'react-router-dom';
+import { useT } from '@/i18n/lang';
 export const LeadDashboard = () => {
   const {
     user
   } = useAuth();
+  const t = useT();
+  // ?tab=learning-progress opens the report (used by the notification bell).
+  const [searchParams] = useSearchParams();
+  const requestedTab = searchParams.get('tab');
   const [pendingRequests, setPendingRequests] = useState([]);
   const [allTasks, setAllTasks] = useState([]);
   const [analysts, setAnalysts] = useState([]);
@@ -27,7 +34,10 @@ export const LeadDashboard = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [selectedAnalyst, setSelectedAnalyst] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('requests');
+  const [activeTab, setActiveTab] = useState(requestedTab || 'requests');
+  useEffect(() => {
+    if (requestedTab) setActiveTab(requestedTab);
+  }, [requestedTab]);
   const fetchData = async () => {
     if (!user) return;
     try {
@@ -313,7 +323,12 @@ export const LeadDashboard = () => {
           <TabsTrigger value="tasks">Task Management</TabsTrigger>
           <TabsTrigger value="team">Team</TabsTrigger>
           <TabsTrigger value="reports">Reports</TabsTrigger>
+          <TabsTrigger value="learning-progress">{t.progress.tab}</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="learning-progress" className="space-y-4">
+          <ProgressReport />
+        </TabsContent>
 
         <TabsContent value="requests" className="space-y-4">
           <Card>

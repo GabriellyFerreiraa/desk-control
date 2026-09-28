@@ -7,6 +7,7 @@ import { LogOut, User, Settings, ChevronDown, ShieldCheck, Hourglass, Ban } from
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useT } from '@/i18n/lang';
+import { NotificationBell } from '@/components/learning/NotificationBell';
 const Dashboard = () => {
   const {
     userProfile,
@@ -68,6 +69,8 @@ const Dashboard = () => {
             </div>
           </div>
 
+          <div className="flex items-center gap-1">
+          <NotificationBell />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center space-x-2 h-auto p-2">
@@ -115,6 +118,7 @@ const Dashboard = () => {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          </div>
         </div>
       </header>
 
