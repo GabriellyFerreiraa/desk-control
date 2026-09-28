@@ -690,7 +690,7 @@ const en = {
     },
     users: {
       title: 'Users and access',
-      description: 'Activate new accounts, assign them to a project and set their role.',
+      description: 'Activate new accounts, assign them to a project and set their role. A Lead automatically leads the project assigned here; add more projects in the Projects tab.',
       searchPlaceholder: 'Search by name or email',
       filterAll: 'All',
       colUser: 'User',
@@ -709,7 +709,7 @@ const en = {
     },
     projects: {
       title: 'Projects',
-      description: 'Each analyst belongs to one project. A project can have several leads.',
+      description: 'Each analyst belongs to one project. A project can have several leads, and a lead can run several projects.',
       new: 'New project',
       edit: 'Edit project',
       name: 'Name',
@@ -1405,7 +1405,7 @@ const es: Dict = {
     },
     users: {
       title: 'Usuarios y accesos',
-      description: 'Activa las cuentas nuevas, asígnalas a un proyecto y define su rol.',
+      description: 'Activa las cuentas nuevas, asígnalas a un proyecto y define su rol. Un Lead queda automáticamente como lead del proyecto que le asignes aquí; puedes sumarle más proyectos en la pestaña Proyectos.',
       searchPlaceholder: 'Buscar por nombre o correo',
       filterAll: 'Todos',
       colUser: 'Usuario',
@@ -1424,7 +1424,7 @@ const es: Dict = {
     },
     projects: {
       title: 'Proyectos',
-      description: 'Cada analista pertenece a un proyecto. Un proyecto puede tener varios leads.',
+      description: 'Cada analista pertenece a un proyecto. Un proyecto puede tener varios leads, y un lead puede estar a cargo de varios proyectos.',
       new: 'Nuevo proyecto',
       edit: 'Editar proyecto',
       name: 'Nombre',
@@ -2118,7 +2118,7 @@ const pt: Dict = {
     },
     users: {
       title: 'Usuários e acessos',
-      description: 'Ative as contas novas, atribua-as a um projeto e defina o papel de cada uma.',
+      description: 'Ative as contas novas, atribua-as a um projeto e defina o papel de cada uma. Um Lead passa a liderar automaticamente o projeto atribuído aqui; adicione mais projetos na aba Projetos.',
       searchPlaceholder: 'Buscar por nome ou e-mail',
       filterAll: 'Todos',
       colUser: 'Usuário',
@@ -2137,7 +2137,7 @@ const pt: Dict = {
     },
     projects: {
       title: 'Projetos',
-      description: 'Cada analista pertence a um projeto. Um projeto pode ter vários leads.',
+      description: 'Cada analista pertence a um projeto. Um projeto pode ter vários leads, e um lead pode cuidar de vários projetos.',
       new: 'Novo projeto',
       edit: 'Editar projeto',
       name: 'Nome',

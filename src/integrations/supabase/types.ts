@@ -692,6 +692,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_delete_user: {
+        Args: { _user_id: string }
+        Returns: undefined
+      }
       admin_reorder: {
         Args: { _kind: string; _ids: string[] }
         Returns: undefined

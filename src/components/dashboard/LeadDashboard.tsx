@@ -17,10 +17,14 @@ import { UserAvatar } from '@/components/UserAvatar';
 import { ProgressReport } from '@/components/learning/ProgressReport';
 import { useSearchParams } from 'react-router-dom';
 import { useT } from '@/i18n/lang';
+import { ConfirmAction } from '@/components/admin/course/ConfirmAction';
 export const LeadDashboard = () => {
   const {
-    user
+    user,
+    userProfile
   } = useAuth();
+  // Deleting an account (login included) is admin-only, also in the database.
+  const isAdmin = userProfile?.role === 'admin';
   const t = useT();
   const locale = useDateLocale();
   // ?tab=learning-progress opens the report (used by the notification bell).
@@ -168,17 +172,12 @@ export const LeadDashboard = () => {
     }
   };
   const deleteAnalyst = async (analystId: string, analystName: string) => {
-    if (!confirm(t.team.deleteConfirm(analystName))) {
-      return;
-    }
     try {
-      // tasks.assigned_to and absence_requests.analyst_id both have
-      // ON DELETE CASCADE to profiles.user_id, so deleting the profile
-      // row alone removes their tasks/absence requests atomically —
-      // no need for separate client-side delete calls.
+      // Removes the login account; profile, tasks, absences and learning
+      // progress go with it through ON DELETE CASCADE.
       const {
         error
-      } = await supabase.from('profiles').delete().eq('user_id', analystId);
+      } = await supabase.rpc('admin_delete_user', { _user_id: analystId });
       if (error) throw error;
       toast({
         title: t.team.deleted,
@@ -475,10 +474,16 @@ export const LeadDashboard = () => {
                           <Button size="sm" variant="outline" onClick={() => setSelectedAnalyst(analyst)} className="w-full">
                             {t.team.editSchedule}
                           </Button>
-                          <Button size="sm" variant="destructive" onClick={() => deleteAnalyst(analyst.user_id, analyst.name)} className="w-full">
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            {t.team.deleteAnalyst}
-                          </Button>
+                          {isAdmin && <ConfirmAction
+                              trigger={<Button size="sm" variant="destructive" className="w-full">
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  {t.team.deleteAnalyst}
+                                </Button>}
+                              title={t.team.deleteAnalyst}
+                              description={t.team.deleteConfirm(analyst.name)}
+                              confirmLabel={t.team.deleteAnalyst}
+                              onConfirm={() => deleteAnalyst(analyst.user_id, analyst.name)}
+                            />}
                         </div>
                      </div>;
               })}
