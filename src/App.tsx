@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
 import Admin from "./pages/Admin";
 import CourseEditor from "./pages/CourseEditor";
+import CoursePlayer from "./pages/CoursePlayer";
 import NotFound from "./pages/NotFound";
 import { LangProvider } from "@/i18n/lang";
 
@@ -39,6 +40,17 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const { userProfile } = useAuth();
 
   if (userProfile?.role !== 'admin' || userProfile?.status !== 'active') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+// Pending or deactivated accounts only get the dashboard's waiting screen.
+const ActiveRoute = ({ children }: { children: React.ReactNode }) => {
+  const { userProfile } = useAuth();
+
+  if (userProfile?.status !== 'active') {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -117,6 +129,13 @@ const App = () => (
                     <AdminRoute>
                       <CourseEditor />
                     </AdminRoute>
+                  </ProtectedRoute>
+                } />
+                <Route path="/learning/:courseId" element={
+                  <ProtectedRoute>
+                    <ActiveRoute>
+                      <CoursePlayer />
+                    </ActiveRoute>
                   </ProtectedRoute>
                 } />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

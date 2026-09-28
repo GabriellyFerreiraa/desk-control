@@ -80,6 +80,132 @@ export type Database = {
           },
         ]
       }
+      course_enrollments: {
+        Row: {
+          completed_at: string | null
+          course_id: string
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          course_id: string
+          started_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          course_id?: string
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      material_views: {
+        Row: {
+          completed: boolean
+          first_opened_at: string
+          last_opened_at: string
+          material_id: string
+          user_id: string
+          watched_percent: number
+        }
+        Insert: {
+          completed?: boolean
+          first_opened_at?: string
+          last_opened_at?: string
+          material_id: string
+          user_id: string
+          watched_percent?: number
+        }
+        Update: {
+          completed?: boolean
+          first_opened_at?: string
+          last_opened_at?: string
+          material_id?: string
+          user_id?: string
+          watched_percent?: number
+        }
+        Relationships: []
+      }
+      module_progress: {
+        Row: {
+          module_id: string
+          passed_at: string
+          user_id: string
+        }
+        Insert: {
+          module_id: string
+          passed_at?: string
+          user_id: string
+        }
+        Update: {
+          module_id?: string
+          passed_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          payload: Json
+          read_at: string | null
+          recipient_id: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          payload?: Json
+          read_at?: string | null
+          recipient_id: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          payload?: Json
+          read_at?: string | null
+          recipient_id?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      quiz_attempts: {
+        Row: {
+          answers: Json
+          created_at: string
+          id: string
+          module_id: string
+          pass_score: number
+          passed: boolean
+          score: number
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          created_at?: string
+          id?: string
+          module_id: string
+          pass_score: number
+          passed: boolean
+          score: number
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          created_at?: string
+          id?: string
+          module_id?: string
+          pass_score?: number
+          passed?: boolean
+          score?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       course_projects: {
         Row: {
           course_id: string
@@ -608,6 +734,18 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
         }
         Returns: boolean
+      }
+      learning_get_quiz: {
+        Args: { _module_id: string }
+        Returns: Json
+      }
+      learning_record_view: {
+        Args: { _material_id: string; _watched_percent?: number | null }
+        Returns: boolean
+      }
+      learning_submit_quiz: {
+        Args: { _module_id: string; _answers: Json }
+        Returns: Json
       }
       is_active_user: {
         Args: { _user_id: string }

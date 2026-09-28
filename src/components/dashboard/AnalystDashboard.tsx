@@ -14,11 +14,17 @@ import { SelfAssignTaskForm } from '@/components/forms/SelfAssignTaskForm';
 import { TeamCalendar } from '@/components/calendar/TeamCalendar';
 import { UserAvatar } from '@/components/UserAvatar';
 import { CancellationRequestModal } from '@/components/modals/CancellationRequestModal';
+import { LearningTab } from '@/components/learning/LearningTab';
+import { useSearchParams } from 'react-router-dom';
+import { useT } from '@/i18n/lang';
 export const AnalystDashboard = () => {
   const {
     userProfile,
     user
   } = useAuth();
+  const t = useT();
+  // ?tab=learning lets the course player send the analyst back to this tab.
+  const [searchParams] = useSearchParams();
   const [absenceRequests, setAbsenceRequests] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [onlineAnalysts, setOnlineAnalysts] = useState([]);
@@ -26,7 +32,7 @@ export const AnalystDashboard = () => {
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [showSelfTaskForm, setShowSelfTaskForm] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('tasks');
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'tasks');
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
   const fetchData = async () => {
@@ -329,7 +335,12 @@ export const AnalystDashboard = () => {
           <TabsTrigger value="absences">Absence Requests</TabsTrigger>
           <TabsTrigger value="team">Team</TabsTrigger>
           <TabsTrigger value="reports">Reports</TabsTrigger>
+          <TabsTrigger value="learning">{t.learning.tab}</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="learning" className="space-y-4">
+          <LearningTab />
+        </TabsContent>
 
         <TabsContent value="tasks" className="space-y-4">
           <Card>
