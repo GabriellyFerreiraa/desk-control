@@ -10,14 +10,31 @@ import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, User, Bell, Shield, Moon, Sun, Monitor } from 'lucide-react';
+import { ArrowLeft, User, Bell, Shield, Moon, Sun, Monitor, Languages } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTheme } from "@/components/ThemeProvider";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useLang, useT } from '@/i18n/lang';
+import { LANGS, LANG_LABELS, STRINGS, isLang } from '@/i18n/strings';
 const Settings = () => {
   const { userProfile, user, refreshProfile } = useAuth();
   const navigate = useNavigate();
+  const { lang, setLang } = useLang();
+  const t = useT();
+
+  const handleLanguageChange = async (value: string) => {
+    if (!isLang(value)) return;
+    try {
+      await setLang(value);
+      // Confirm in the language just picked, not the one being left.
+      toast({ title: STRINGS[value].settings.languageSaved });
+      await refreshProfile?.();
+    } catch (error) {
+      console.error('Error saving language:', error);
+      toast({ title: t.common.error, variant: 'destructive' });
+    }
+  };
   const {
     theme,
     setTheme
@@ -160,9 +177,9 @@ const Settings = () => {
           <div className="flex items-center space-x-4">
             <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
+              {t.header.backToDashboard}
             </Button>
-            <h1 className="text-xl font-bold">Settings</h1>
+            <h1 className="text-xl font-bold">{t.header.settings}</h1>
           </div>
         </div>
       </header>
@@ -274,6 +291,34 @@ const Settings = () => {
                   <SelectItem value="system">System</SelectItem>
                   <SelectItem value="light">Light</SelectItem>
                   <SelectItem value="dark">Dark</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Language Settings */}
+        <Card className="bg-[hsl(var(--panel))]">
+          <CardHeader className="bg-[hsl(var(--panel))]">
+            <CardTitle className="flex items-center gap-2">
+              <Languages className="h-5 w-5" />
+              {t.settings.languageTitle}
+            </CardTitle>
+            <CardDescription>
+              {t.settings.languageDescription}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 bg-[hsl(var(--panel))]">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="language">{t.settings.languageLabel}</Label>
+              <Select value={lang} onValueChange={handleLanguageChange}>
+                <SelectTrigger id="language" className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {LANGS.map((code) => (
+                    <SelectItem key={code} value={code}>{LANG_LABELS[code]}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

@@ -1,0 +1,280 @@
+// UI strings in the three supported languages. English is the source of
+// the Dict type, so a missing key in es/pt is a type error.
+//
+// Screens that predate the Learning module still have hardcoded English
+// text; they move here in phase 5 (see docs/learning-spec.md).
+
+export const LANGS = ['en', 'es', 'pt'] as const;
+export type Lang = (typeof LANGS)[number];
+export const DEFAULT_LANG: Lang = 'en';
+
+export const LANG_LABELS: Record<Lang, string> = {
+  en: 'English',
+  es: 'Español',
+  pt: 'Português',
+};
+
+const en = {
+  common: {
+    loading: 'Loading...',
+    save: 'Save',
+    saving: 'Saving...',
+    cancel: 'Cancel',
+    error: 'Error',
+    search: 'Search',
+    none: 'None',
+  },
+  roles: {
+    admin: 'Admin',
+    lead: 'Lead',
+    analyst: 'Analyst',
+  },
+  status: {
+    pending: 'Pending',
+    active: 'Active',
+    inactive: 'Inactive',
+  },
+  header: {
+    leadDashboard: 'Lead Dashboard',
+    analystDashboard: 'Analyst Dashboard',
+    adminDashboard: 'Admin Dashboard',
+    settings: 'Settings',
+    admin: 'Admin panel',
+    logout: 'Logout',
+    backToDashboard: 'Back to Dashboard',
+  },
+  access: {
+    pendingTitle: 'Waiting for approval',
+    pendingBody: 'Your account was created. An administrator needs to activate it and assign you to a project before you can use DeskControl.',
+    inactiveTitle: 'Account deactivated',
+    inactiveBody: 'Your access to DeskControl was removed. Contact an administrator if you think this is a mistake.',
+    signOut: 'Sign out',
+  },
+  settings: {
+    languageTitle: 'Language',
+    languageDescription: 'Choose the language of the interface',
+    languageLabel: 'Interface language',
+    languageSaved: 'Language updated',
+  },
+  admin: {
+    title: 'Admin panel',
+    tabUsers: 'Users',
+    tabProjects: 'Projects',
+    users: {
+      title: 'Users and access',
+      description: 'Activate new accounts, assign them to a project and set their role.',
+      searchPlaceholder: 'Search by name or email',
+      filterAll: 'All',
+      colUser: 'User',
+      colRole: 'Role',
+      colProject: 'Project',
+      colStatus: 'Status',
+      colJoined: 'Joined',
+      you: 'you',
+      noProject: 'No project',
+      empty: 'No users match this filter.',
+      updated: 'User updated',
+      updateFailed: 'Could not update the user',
+      selfLocked: 'You cannot change your own role or status.',
+      activateNeedsProject: 'Assign a project before activating this user.',
+      pendingCount: (n: number) => `${n} waiting for approval`,
+    },
+    projects: {
+      title: 'Projects',
+      description: 'Each analyst belongs to one project. A project can have several leads.',
+      new: 'New project',
+      edit: 'Edit project',
+      name: 'Name',
+      namePlaceholder: 'e.g. Merck SD',
+      active: 'Active',
+      leads: 'Leads',
+      noLeads: 'No leads assigned',
+      noLeadCandidates: 'There are no users with the Lead or Admin role yet. Change a user\'s role in the Users tab first.',
+      members: (n: number) => (n === 1 ? '1 member' : `${n} members`),
+      empty: 'No projects yet.',
+      saved: 'Project saved',
+      saveFailed: 'Could not save the project',
+      nameRequired: 'The project needs a name.',
+      nameTaken: 'A project with this name already exists.',
+    },
+  },
+};
+
+export type Dict = typeof en;
+
+const es: Dict = {
+  common: {
+    loading: 'Cargando...',
+    save: 'Guardar',
+    saving: 'Guardando...',
+    cancel: 'Cancelar',
+    error: 'Error',
+    search: 'Buscar',
+    none: 'Ninguno',
+  },
+  roles: {
+    admin: 'Admin',
+    lead: 'Lead',
+    analyst: 'Analista',
+  },
+  status: {
+    pending: 'Pendiente',
+    active: 'Activo',
+    inactive: 'Inactivo',
+  },
+  header: {
+    leadDashboard: 'Panel de Lead',
+    analystDashboard: 'Panel de Analista',
+    adminDashboard: 'Panel de Admin',
+    settings: 'Configuración',
+    admin: 'Panel de admin',
+    logout: 'Cerrar sesión',
+    backToDashboard: 'Volver al panel',
+  },
+  access: {
+    pendingTitle: 'Esperando aprobación',
+    pendingBody: 'Tu cuenta fue creada. Un administrador tiene que activarla y asignarte a un proyecto antes de que puedas usar DeskControl.',
+    inactiveTitle: 'Cuenta desactivada',
+    inactiveBody: 'Tu acceso a DeskControl fue retirado. Si crees que es un error, contacta a un administrador.',
+    signOut: 'Cerrar sesión',
+  },
+  settings: {
+    languageTitle: 'Idioma',
+    languageDescription: 'Elige el idioma de la interfaz',
+    languageLabel: 'Idioma de la interfaz',
+    languageSaved: 'Idioma actualizado',
+  },
+  admin: {
+    title: 'Panel de admin',
+    tabUsers: 'Usuarios',
+    tabProjects: 'Proyectos',
+    users: {
+      title: 'Usuarios y accesos',
+      description: 'Activa las cuentas nuevas, asígnalas a un proyecto y define su rol.',
+      searchPlaceholder: 'Buscar por nombre o correo',
+      filterAll: 'Todos',
+      colUser: 'Usuario',
+      colRole: 'Rol',
+      colProject: 'Proyecto',
+      colStatus: 'Estado',
+      colJoined: 'Registro',
+      you: 'tú',
+      noProject: 'Sin proyecto',
+      empty: 'Ningún usuario coincide con este filtro.',
+      updated: 'Usuario actualizado',
+      updateFailed: 'No se pudo actualizar el usuario',
+      selfLocked: 'No puedes cambiar tu propio rol ni tu estado.',
+      activateNeedsProject: 'Asigna un proyecto antes de activar a este usuario.',
+      pendingCount: (n: number) => `${n} esperando aprobación`,
+    },
+    projects: {
+      title: 'Proyectos',
+      description: 'Cada analista pertenece a un proyecto. Un proyecto puede tener varios leads.',
+      new: 'Nuevo proyecto',
+      edit: 'Editar proyecto',
+      name: 'Nombre',
+      namePlaceholder: 'ej.: Merck SD',
+      active: 'Activo',
+      leads: 'Leads',
+      noLeads: 'Sin leads asignados',
+      noLeadCandidates: 'Todavía no hay usuarios con rol Lead o Admin. Primero cambia el rol de un usuario en la pestaña Usuarios.',
+      members: (n: number) => (n === 1 ? '1 miembro' : `${n} miembros`),
+      empty: 'Todavía no hay proyectos.',
+      saved: 'Proyecto guardado',
+      saveFailed: 'No se pudo guardar el proyecto',
+      nameRequired: 'El proyecto necesita un nombre.',
+      nameTaken: 'Ya existe un proyecto con este nombre.',
+    },
+  },
+};
+
+const pt: Dict = {
+  common: {
+    loading: 'Carregando...',
+    save: 'Salvar',
+    saving: 'Salvando...',
+    cancel: 'Cancelar',
+    error: 'Erro',
+    search: 'Buscar',
+    none: 'Nenhum',
+  },
+  roles: {
+    admin: 'Admin',
+    lead: 'Lead',
+    analyst: 'Analista',
+  },
+  status: {
+    pending: 'Pendente',
+    active: 'Ativo',
+    inactive: 'Inativo',
+  },
+  header: {
+    leadDashboard: 'Painel de Lead',
+    analystDashboard: 'Painel de Analista',
+    adminDashboard: 'Painel de Admin',
+    settings: 'Configurações',
+    admin: 'Painel de admin',
+    logout: 'Sair',
+    backToDashboard: 'Voltar ao painel',
+  },
+  access: {
+    pendingTitle: 'Aguardando aprovação',
+    pendingBody: 'Sua conta foi criada. Um administrador precisa ativá-la e atribuir você a um projeto antes que você possa usar o DeskControl.',
+    inactiveTitle: 'Conta desativada',
+    inactiveBody: 'Seu acesso ao DeskControl foi removido. Se você acha que é um erro, fale com um administrador.',
+    signOut: 'Sair',
+  },
+  settings: {
+    languageTitle: 'Idioma',
+    languageDescription: 'Escolha o idioma da interface',
+    languageLabel: 'Idioma da interface',
+    languageSaved: 'Idioma atualizado',
+  },
+  admin: {
+    title: 'Painel de admin',
+    tabUsers: 'Usuários',
+    tabProjects: 'Projetos',
+    users: {
+      title: 'Usuários e acessos',
+      description: 'Ative as contas novas, atribua-as a um projeto e defina o papel de cada uma.',
+      searchPlaceholder: 'Buscar por nome ou e-mail',
+      filterAll: 'Todos',
+      colUser: 'Usuário',
+      colRole: 'Papel',
+      colProject: 'Projeto',
+      colStatus: 'Status',
+      colJoined: 'Cadastro',
+      you: 'você',
+      noProject: 'Sem projeto',
+      empty: 'Nenhum usuário corresponde a este filtro.',
+      updated: 'Usuário atualizado',
+      updateFailed: 'Não foi possível atualizar o usuário',
+      selfLocked: 'Você não pode mudar seu próprio papel nem seu status.',
+      activateNeedsProject: 'Atribua um projeto antes de ativar este usuário.',
+      pendingCount: (n: number) => `${n} aguardando aprovação`,
+    },
+    projects: {
+      title: 'Projetos',
+      description: 'Cada analista pertence a um projeto. Um projeto pode ter vários leads.',
+      new: 'Novo projeto',
+      edit: 'Editar projeto',
+      name: 'Nome',
+      namePlaceholder: 'ex.: Merck SD',
+      active: 'Ativo',
+      leads: 'Leads',
+      noLeads: 'Nenhum lead atribuído',
+      noLeadCandidates: 'Ainda não há usuários com papel Lead ou Admin. Primeiro mude o papel de um usuário na aba Usuários.',
+      members: (n: number) => (n === 1 ? '1 membro' : `${n} membros`),
+      empty: 'Ainda não há projetos.',
+      saved: 'Projeto salvo',
+      saveFailed: 'Não foi possível salvar o projeto',
+      nameRequired: 'O projeto precisa de um nome.',
+      nameTaken: 'Já existe um projeto com este nome.',
+    },
+  },
+};
+
+export const STRINGS: Record<Lang, Dict> = { en, es, pt };
+
+export const isLang = (value: unknown): value is Lang =>
+  typeof value === 'string' && (LANGS as readonly string[]).includes(value);

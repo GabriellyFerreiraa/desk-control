@@ -91,11 +91,14 @@ export type Database = {
           created_at: string
           end_time: string
           id: string
+          language: string
           lunch_end: string | null
           lunch_start: string | null
           name: string
+          project_id: string | null
           role: Database["public"]["Enums"]["app_role"]
           start_time: string
+          status: Database["public"]["Enums"]["user_status"]
           updated_at: string
           user_id: string
           work_days: Json
@@ -110,11 +113,14 @@ export type Database = {
           created_at?: string
           end_time?: string
           id?: string
+          language?: string
           lunch_end?: string | null
           lunch_start?: string | null
           name: string
+          project_id?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           start_time?: string
+          status?: Database["public"]["Enums"]["user_status"]
           updated_at?: string
           user_id: string
           work_days?: Json
@@ -129,14 +135,82 @@ export type Database = {
           created_at?: string
           end_time?: string
           id?: string
+          language?: string
           lunch_end?: string | null
           lunch_start?: string | null
           name?: string
+          project_id?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           start_time?: string
+          status?: Database["public"]["Enums"]["user_status"]
           updated_at?: string
           user_id?: string
           work_days?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_leads: {
+        Row: {
+          created_at: string
+          lead_id: string
+          project_id: string
+        }
+        Insert: {
+          created_at?: string
+          lead_id: string
+          project_id: string
+        }
+        Update: {
+          created_at?: string
+          lead_id?: string
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_leads_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "project_leads_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -202,6 +276,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_list_users: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          last_sign_in_at: string | null
+          name: string
+          project_id: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          status: Database["public"]["Enums"]["user_status"]
+          user_id: string
+        }[]
+      }
       dismiss_absence_request: {
         Args: { _id: string }
         Returns: undefined
@@ -217,6 +305,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_active_user: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
+      is_admin: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       absence_status:
@@ -229,6 +325,7 @@ export type Database = {
         | "canceled"
       app_role: "admin" | "lead" | "analyst"
       task_status: "pending" | "in_progress" | "completed"
+      user_status: "pending" | "active" | "inactive"
       work_mode: "office" | "home"
     }
     CompositeTypes: {
@@ -368,6 +465,7 @@ export const Constants = {
       ],
       app_role: ["admin", "lead", "analyst"],
       task_status: ["pending", "in_progress", "completed"],
+      user_status: ["pending", "active", "inactive"],
       work_mode: ["office", "home"],
     },
   },

@@ -8,7 +8,9 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import { LangProvider } from "@/i18n/lang";
 
 
 // Protected Route Component
@@ -27,6 +29,18 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/auth" replace />;
   }
   
+  return <>{children}</>;
+};
+
+// Admin-only route. The database enforces the same rule; this only keeps
+// other roles from landing on a screen whose requests would all fail.
+const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const { userProfile } = useAuth();
+
+  if (userProfile?.role !== 'admin' || userProfile?.status !== 'active') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return <>{children}</>;
 };
 
@@ -62,6 +76,7 @@ const ThemedWrapper = ({ children }: { children: React.ReactNode }) => {
 const App = () => (
   <ThemeProvider defaultTheme="dark" storageKey="deskcontrol-theme">
     <AuthProvider>
+      <LangProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -89,6 +104,13 @@ const App = () => (
                     <Settings />
                   </ProtectedRoute>
                 } />
+                <Route path="/admin" element={
+                  <ProtectedRoute>
+                    <AdminRoute>
+                      <Admin />
+                    </AdminRoute>
+                  </ProtectedRoute>
+                } />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
@@ -96,6 +118,7 @@ const App = () => (
           </ThemedWrapper>
         </BrowserRouter>
       </TooltipProvider>
+      </LangProvider>
     </AuthProvider>
   </ThemeProvider>
 );
