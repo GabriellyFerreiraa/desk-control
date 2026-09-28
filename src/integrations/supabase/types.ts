@@ -80,6 +80,197 @@ export type Database = {
           },
         ]
       }
+      course_projects: {
+        Row: {
+          course_id: string
+          project_id: string
+        }
+        Insert: {
+          course_id: string
+          project_id: string
+        }
+        Update: {
+          course_id?: string
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_projects_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_projects_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      courses: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: Json
+          id: string
+          published: boolean
+          title: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: Json
+          id?: string
+          published?: boolean
+          title?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: Json
+          id?: string
+          published?: boolean
+          title?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courses_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      material_versions: {
+        Row: {
+          created_at: string
+          file_name: string | null
+          id: string
+          language: string
+          material_id: string
+          mime_type: string | null
+          size_bytes: number | null
+          storage_path: string | null
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          created_at?: string
+          file_name?: string | null
+          id?: string
+          language: string
+          material_id: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_path?: string | null
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          created_at?: string
+          file_name?: string | null
+          id?: string
+          language?: string
+          material_id?: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_path?: string | null
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_versions_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "module_materials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      module_materials: {
+        Row: {
+          created_at: string
+          id: string
+          kind: Database["public"]["Enums"]["material_kind"]
+          module_id: string
+          position: number
+          title: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: Database["public"]["Enums"]["material_kind"]
+          module_id: string
+          position?: number
+          title?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["material_kind"]
+          module_id?: string
+          position?: number
+          title?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_materials_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      modules: {
+        Row: {
+          course_id: string
+          created_at: string
+          description: Json
+          id: string
+          position: number
+          title: Json
+          updated_at: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          description?: Json
+          id?: string
+          position?: number
+          title?: Json
+          updated_at?: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          description?: Json
+          id?: string
+          position?: number
+          title?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modules_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           area: string | null
@@ -214,6 +405,105 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_options: {
+        Row: {
+          id: string
+          is_correct: boolean
+          label: Json
+          position: number
+          question_id: string
+        }
+        Insert: {
+          id?: string
+          is_correct?: boolean
+          label?: Json
+          position?: number
+          question_id: string
+        }
+        Update: {
+          id?: string
+          is_correct?: boolean
+          label?: Json
+          position?: number
+          question_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_options_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_questions: {
+        Row: {
+          created_at: string
+          id: string
+          module_id: string
+          position: number
+          prompt: Json
+          type: Database["public"]["Enums"]["question_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          module_id: string
+          position?: number
+          prompt?: Json
+          type: Database["public"]["Enums"]["question_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          module_id?: string
+          position?: number
+          prompt?: Json
+          type?: Database["public"]["Enums"]["question_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_questions_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["module_id"]
+          },
+        ]
+      }
+      quizzes: {
+        Row: {
+          created_at: string
+          module_id: string
+          pass_score: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          module_id: string
+          pass_score?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          module_id?: string
+          pass_score?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quizzes_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: true
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           assigned_by: string
@@ -276,6 +566,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_reorder: {
+        Args: { _kind: string; _ids: string[] }
+        Returns: undefined
+      }
+      admin_save_question: {
+        Args: {
+          _module_id: string
+          _question_id: string | null
+          _type: Database["public"]["Enums"]["question_type"]
+          _prompt: Json
+          _options: Json
+        }
+        Returns: string
+      }
       admin_list_users: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -324,6 +628,8 @@ export type Database = {
         | "cancel_pending"
         | "canceled"
       app_role: "admin" | "lead" | "analyst"
+      material_kind: "file" | "video" | "link"
+      question_type: "single" | "multiple" | "true_false"
       task_status: "pending" | "in_progress" | "completed"
       user_status: "pending" | "active" | "inactive"
       work_mode: "office" | "home"
@@ -464,6 +770,8 @@ export const Constants = {
         "canceled",
       ],
       app_role: ["admin", "lead", "analyst"],
+      material_kind: ["file", "video", "link"],
+      question_type: ["single", "multiple", "true_false"],
       task_status: ["pending", "in_progress", "completed"],
       user_status: ["pending", "active", "inactive"],
       work_mode: ["office", "home"],

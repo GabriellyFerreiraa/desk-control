@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
 import Admin from "./pages/Admin";
+import CourseEditor from "./pages/CourseEditor";
 import NotFound from "./pages/NotFound";
 import { LangProvider } from "@/i18n/lang";
 
@@ -74,7 +75,7 @@ const ThemedWrapper = ({ children }: { children: React.ReactNode }) => {
 };
 
 const App = () => (
-  <ThemeProvider defaultTheme="dark" storageKey="deskcontrol-theme">
+  <ThemeProvider defaultTheme="light" storageKey="deskcontrol-theme">
     <AuthProvider>
       <LangProvider>
       <TooltipProvider>
@@ -108,6 +109,13 @@ const App = () => (
                   <ProtectedRoute>
                     <AdminRoute>
                       <Admin />
+                    </AdminRoute>
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/courses/:courseId" element={
+                  <ProtectedRoute>
+                    <AdminRoute>
+                      <CourseEditor />
                     </AdminRoute>
                   </ProtectedRoute>
                 } />
