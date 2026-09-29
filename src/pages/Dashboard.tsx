@@ -1,20 +1,16 @@
 import { useAuth } from '@/hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
 import { AnalystDashboard } from '@/components/dashboard/AnalystDashboard';
 import { LeadDashboard } from '@/components/dashboard/LeadDashboard';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Settings, ChevronDown, ShieldCheck, Hourglass, Ban } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { LogOut, Hourglass, Ban } from 'lucide-react';
 import { useT } from '@/i18n/lang';
-import { NotificationBell } from '@/components/learning/NotificationBell';
+import { AppHeader } from '@/components/layout/AppHeader';
 const Dashboard = () => {
   const {
     userProfile,
     signOut,
     loading
   } = useAuth();
-  const navigate = useNavigate();
   const t = useT();
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-background">
@@ -59,70 +55,7 @@ const Dashboard = () => {
   const seesLeadView = userProfile.role === 'lead' || isAdmin;
   const dashboardLabel = isAdmin ? t.header.adminDashboard : seesLeadView ? t.header.leadDashboard : t.header.analystDashboard;
   return <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="flex h-16 items-center justify-between px-6 bg-[hsl(var(--panel))]">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-xl font-bold">DeskControl</h1>
-            <div className="hidden md:block text-sm text-muted-foreground">
-              {dashboardLabel}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1">
-          <NotificationBell />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center space-x-2 h-auto p-2">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={userProfile.avatar_url} />
-                  <AvatarFallback>
-                    <User className="h-4 w-4" />
-                  </AvatarFallback>
-                </Avatar>
-                <div className="hidden md:block text-left">
-                  <p className="text-sm font-medium">{userProfile.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {t.roles[userProfile.role as keyof typeof t.roles]}
-                  </p>
-                </div>
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-              </Button>
-            </DropdownMenuTrigger>
-
-            <DropdownMenuContent align="end" className="w-56 border shadow-lg bg-[hsl(var(--panel))]">
-              <div className="px-2 py-1.5">
-                <p className="text-sm font-medium">{userProfile.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {t.roles[userProfile.role as keyof typeof t.roles]}
-                </p>
-              </div>
-
-              <DropdownMenuSeparator />
-
-              {isAdmin && <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/admin')}>
-                  <ShieldCheck className="mr-2 h-4 w-4" />
-                  {t.header.admin}
-                </DropdownMenuItem>}
-
-              <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/settings')}>
-                <Settings className="mr-2 h-4 w-4" />
-                {t.header.settings}
-              </DropdownMenuItem>
-
-              <DropdownMenuSeparator />
-
-              <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive hover:text-destructive">
-                <LogOut className="mr-2 h-4 w-4" />
-                {t.header.logout}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
+      <AppHeader crumbs={[{ label: dashboardLabel }]} />
       <main className="mx-auto w-full max-w-7xl p-4 sm:p-6">
         {seesLeadView ? <LeadDashboard /> : <AnalystDashboard />}
       </main>

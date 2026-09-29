@@ -24,8 +24,9 @@ import { RequestRow, RequiresAction } from './supervisor/RequiresAction';
 import { TeamNow } from './supervisor/TeamNow';
 import { TeamRow, TeamTable } from './supervisor/TeamTable';
 import { localIsoDay, presenceOf } from './teamStatus';
+import { LoadError } from './LoadError';
 
-const TABS = ['tasks', 'team', 'calendar', 'history', 'learning-progress'] as const;
+const TABS = ['tasks', 'team', 'history', 'learning-progress'] as const;
 const UPCOMING_DAYS = 14;
 // Presence depends on the clock (lunch, breaks, end of shift).
 const CLOCK_TICK_MS = 60_000;
@@ -57,6 +58,7 @@ export const LeadDashboard = () => {
   const [selectedAnalyst, setSelectedAnalyst] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadedAt, setLoadedAt] = useState<Date | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const [now, setNow] = useState(() => new Date());
   const [activeTab, setActiveTab] = useState<string>(requestedTab && (TABS as readonly string[]).includes(requestedTab) ? requestedTab : 'tasks');
   const actionRef = useRef<HTMLDivElement>(null);
@@ -123,7 +125,9 @@ export const LeadDashboard = () => {
       setAllTasks((tasks || []).filter(inTeam));
       setMyProfile(ownProfile || null);
       setLoadedAt(new Date());
+      setLoadError(false);
     } catch (error) {
+      setLoadError(true);
       console.error('Error fetching data:', error);
       toast({
         title: t.common.error,
@@ -296,6 +300,11 @@ export const LeadDashboard = () => {
       </div>;
   }
 
+  // Never show empty lists after a failed first load: they would read as "nothing pending".
+  if (loadError && !loadedAt) {
+    return <LoadError onRetry={() => { setLoading(true); fetchData(); }} />;
+  }
+
   return <div className="space-y-6">
       <TodayStrip
         dateLabel={format(now, 'EEEE d MMMM', { locale })}
@@ -313,6 +322,10 @@ export const LeadDashboard = () => {
         </div>
       </div>
 
+      {/* Always visible and in a fixed spot: planning who is out is a daily task.
+          Variable-height content (tasks, history) goes below it, in tabs. */}
+      <TeamCalendar memberIds={analysts.map((a) => a.user_id)} />
+
       <div ref={tabsRef} className="scroll-mt-4">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
@@ -321,7 +334,6 @@ export const LeadDashboard = () => {
             {activeTasks.length > 0 && <span className="rounded-full bg-muted px-1.5 text-xs text-muted-foreground">{activeTasks.length}</span>}
           </TabsTrigger>
           <TabsTrigger value="team">{ts.tabs.team}</TabsTrigger>
-          <TabsTrigger value="calendar">{ts.tabs.calendar}</TabsTrigger>
           <TabsTrigger value="history">{ts.tabs.history}</TabsTrigger>
           <TabsTrigger value="learning-progress">{t.progress.tab}</TabsTrigger>
         </TabsList>
@@ -374,10 +386,6 @@ export const LeadDashboard = () => {
             onEdit={setSelectedAnalyst}
             onDelete={(row) => deleteAnalyst(row.user_id, row.name)}
           />
-        </TabsContent>
-
-        <TabsContent value="calendar">
-          <TeamCalendar memberIds={analysts.map((a) => a.user_id)} />
         </TabsContent>
 
         <TabsContent value="history" className="space-y-6">

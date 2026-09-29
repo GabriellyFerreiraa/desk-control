@@ -78,6 +78,8 @@ export interface PlayModule {
   passScore: number;
   materials: PlayMaterial[];
   passed: boolean;
+  // Best passing score, shown when reviewing a module already passed.
+  bestScore: number | null;
   unlocked: boolean;
 }
 
@@ -112,7 +114,7 @@ interface RawPlayCourse {
 const byPosition = <T extends { position: number }>(a: T, b: T) => a.position - b.position;
 
 export const loadCoursePlay = async (courseId: string, userId: string): Promise<PlayCourse | null> => {
-  const [courseRes, progressRes, viewsRes, enrollmentRes] = await Promise.all([
+  const [courseRes, progressRes, viewsRes, enrollmentRes, attemptsRes] = await Promise.all([
     supabase
       .from('courses')
       .select(`
@@ -129,8 +131,9 @@ export const loadCoursePlay = async (courseId: string, userId: string): Promise<
     supabase.from('module_progress').select('module_id').eq('user_id', userId),
     supabase.from('material_views').select('material_id, completed, watched_percent').eq('user_id', userId),
     supabase.from('course_enrollments').select('completed_at').eq('user_id', userId).eq('course_id', courseId).maybeSingle(),
+    supabase.from('quiz_attempts').select('module_id, score').eq('user_id', userId).eq('passed', true),
   ]);
-  const error = courseRes.error || progressRes.error || viewsRes.error || enrollmentRes.error;
+  const error = courseRes.error || progressRes.error || viewsRes.error || enrollmentRes.error || attemptsRes.error;
   if (error) throw error;
   if (!courseRes.data) return null;
 
@@ -138,6 +141,10 @@ export const loadCoursePlay = async (courseId: string, userId: string): Promise<
   const passed = new Set((progressRes.data || []).map((p) => p.module_id));
   const views = new Map((viewsRes.data || []).map((v) => [v.material_id, v]));
   const completedAt = enrollmentRes.data?.completed_at ?? null;
+  const bestScores = new Map<string, number>();
+  for (const attempt of attemptsRes.data || []) {
+    bestScores.set(attempt.module_id, Math.max(bestScores.get(attempt.module_id) ?? 0, attempt.score));
+  }
 
   // Mirrors is_module_unlocked() in the database, which has the final say.
   let previousAllPassed = true;
@@ -149,6 +156,7 @@ export const loadCoursePlay = async (courseId: string, userId: string): Promise<
       description: asLocalized(m.description),
       passScore: quiz?.pass_score ?? 70,
       passed: passed.has(m.id),
+      bestScore: bestScores.get(m.id) ?? null,
       unlocked: !!completedAt || previousAllPassed,
       materials: [...m.module_materials].sort(byPosition).map((mat) => ({
         id: mat.id,

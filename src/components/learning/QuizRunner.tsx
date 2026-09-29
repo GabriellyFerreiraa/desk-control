@@ -15,12 +15,15 @@ interface QuizRunnerProps {
   moduleId: string;
   passScore: number;
   locked: boolean;
+  // Already passed: show the result instead of offering the quiz again.
+  passed?: boolean;
+  bestScore?: number | null;
   hasNextModule: boolean;
   onFinished: (result: QuizResult) => void;
   onNextModule: () => void;
 }
 
-export const QuizRunner = ({ moduleId, passScore, locked, hasNextModule, onFinished, onNextModule }: QuizRunnerProps) => {
+export const QuizRunner = ({ moduleId, passScore, locked, passed = false, bestScore = null, hasNextModule, onFinished, onNextModule }: QuizRunnerProps) => {
   const t = useT();
   const { lang } = useLang();
   const tl = t.learning;
@@ -69,6 +72,14 @@ export const QuizRunner = ({ moduleId, passScore, locked, hasNextModule, onFinis
       return { ...prev, [questionId]: checked ? [...current, optionId] : current.filter((id) => id !== optionId) };
     });
   };
+
+  if (passed && phase === 'idle') {
+    return <div className="flex flex-wrap items-center gap-3 rounded-md border border-status-success/40 bg-status-success/5 p-4" role="status">
+        <CheckCircle2 className="h-5 w-5 text-status-success-fg" aria-hidden />
+        <p className="flex-1 text-sm font-medium">{tl.passedSummary(bestScore)}</p>
+        {hasNextModule && <Button size="sm" variant="outline" onClick={onNextModule}>{tl.nextModule}</Button>}
+      </div>;
+  }
 
   if (phase === 'idle' || phase === 'loading') {
     return <div className="space-y-3">

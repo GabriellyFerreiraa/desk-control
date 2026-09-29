@@ -14,6 +14,7 @@ import { asLocalized, pickLocalized } from '@/lib/localized';
 import { removeMaterialFiles } from '@/lib/learningFiles';
 import { ConfirmAction } from './course/ConfirmAction';
 import { publishedVariant } from '@/lib/status';
+import { useDateLocale } from '@/i18n/dates';
 
 interface CourseRow {
   id: string;
@@ -29,6 +30,7 @@ export const CoursesPanel = () => {
   const navigate = useNavigate();
   const { lang } = useLang();
   const t = useT();
+  const dateLocale = useDateLocale();
   const tc = t.admin.courses;
   const [courses, setCourses] = useState<CourseRow[]>([]);
   const [projectNames, setProjectNames] = useState<Record<string, string>>({});
@@ -130,7 +132,7 @@ export const CoursesPanel = () => {
                         </Badge>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {tc.modulesCount(moduleCount)} · {projects.length > 0 ? projects.join(', ') : tc.noProjects} · {format(new Date(course.updated_at), 'dd/MM/yyyy')}
+                        {tc.modulesCount(moduleCount)} · {projects.length > 0 ? projects.join(', ') : tc.noProjects} · {format(new Date(course.updated_at), 'P', { locale: dateLocale })}
                       </p>
                     </div>
                   </div>

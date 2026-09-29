@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +20,9 @@ const Auth = () => {
     signUp
   } = useAuth();
   const navigate = useNavigate();
+  // "Get started" on the landing page links here with ?tab=signup.
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') === 'signup' ? 'signup' : 'login';
   const t = useT();
   const { lang } = useLang();
   const ta = t.auth;
@@ -95,7 +98,7 @@ const Auth = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="login" className="w-full">
+          <Tabs defaultValue={initialTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">{ta.signInTab}</TabsTrigger>
               <TabsTrigger value="signup">{ta.signUpTab}</TabsTrigger>

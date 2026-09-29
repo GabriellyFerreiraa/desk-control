@@ -8,7 +8,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import { AppHeader } from '@/components/layout/AppHeader';
 import { toast } from '@/hooks/use-toast';
 import { useLang, useT } from '@/i18n/lang';
 import { Localized, cleanLocalized, pickLocalized, sameLocalized } from '@/lib/localized';
@@ -164,14 +165,12 @@ const CourseEditor = () => {
   const courseTitle = pickLocalized(course.title, lang) || tc.untitled;
 
   return <div className="min-h-screen bg-background">
-      <header className="border-b bg-card">
-        <div className="flex h-16 items-center justify-between gap-4 px-6 bg-[hsl(var(--panel))]">
-          <div className="flex items-center gap-4 min-w-0">
-            <Button variant="ghost" size="sm" onClick={backToCourses}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              {tc.backToCourses}
-            </Button>
-            <h1 className="text-xl font-bold truncate">{courseTitle}</h1>
+      <AppHeader crumbs={[{ label: t.admin.title, to: '/admin' }, { label: tc.title, to: '/admin?tab=courses' }, { label: courseTitle }]} />
+
+      <main className="p-4 sm:p-6 max-w-4xl mx-auto space-y-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-3">
+            <h1 className="truncate text-2xl font-semibold tracking-tight">{courseTitle}</h1>
             <Badge variant={publishedVariant(course.published)}>
               {course.published ? tc.published : tc.draft}
             </Badge>
@@ -184,9 +183,6 @@ const CourseEditor = () => {
             {course.published ? tc.unpublish : tc.publish}
           </Button>
         </div>
-      </header>
-
-      <main className="p-6 max-w-4xl mx-auto space-y-6">
         <Card className="bg-[hsl(var(--panel))]">
           <CardHeader className="bg-[hsl(var(--panel))]">
             <CardTitle>{tc.details}</CardTitle>

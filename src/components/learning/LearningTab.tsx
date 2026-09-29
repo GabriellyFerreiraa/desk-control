@@ -12,12 +12,14 @@ import { useLang, useT } from '@/i18n/lang';
 import { pickLocalized } from '@/lib/localized';
 import { CourseStatus, CourseSummary, loadMyCourses } from './learningData';
 import { courseProgressVariant } from '@/lib/status';
+import { useDateLocale } from '@/i18n/dates';
 
 export const LearningTab = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { lang } = useLang();
   const t = useT();
+  const dateLocale = useDateLocale();
   const tl = t.learning;
   const [courses, setCourses] = useState<CourseSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,7 +71,7 @@ export const LearningTab = () => {
                     <Progress value={percent} className="h-2" aria-label={tl.modulesDone(course.passedModules, course.totalModules)} />
                     <p className="text-xs text-muted-foreground">
                       {course.completedAt
-                        ? tl.completedOn(format(new Date(course.completedAt), 'dd/MM/yyyy'))
+                        ? tl.completedOn(format(new Date(course.completedAt), 'P', { locale: dateLocale }))
                         : tl.modulesDone(course.passedModules, course.totalModules)}
                     </p>
                   </CardContent>

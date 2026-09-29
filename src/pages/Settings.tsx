@@ -10,7 +10,8 @@ import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, User, Bell, Shield, Moon, Sun, Monitor, Languages } from 'lucide-react';
+import { AppHeader } from '@/components/layout/AppHeader';
+import { User, Bell, Shield, Moon, Sun, Monitor, Languages } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTheme } from "@/components/ThemeProvider";
 import { supabase } from '@/integrations/supabase/client';
@@ -50,10 +51,10 @@ const Settings = () => {
   // sender in this app yet, so the controls below are disabled and
   // labeled "Coming soon" rather than pretending to save a setting.
   const [notifications] = useState({
-    email: true,
+    email: false,
     desktop: false,
-    taskReminders: true,
-    absenceUpdates: true
+    taskReminders: false,
+    absenceUpdates: false
   });
 
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
@@ -172,20 +173,9 @@ const Settings = () => {
   };
   return <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-card">
-        <div className="flex h-16 items-center justify-between px-6 bg-[hsl(var(--panel))]">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              {t.header.backToDashboard}
-            </Button>
-            <h1 className="text-xl font-bold">{t.header.settings}</h1>
-          </div>
-        </div>
-      </header>
+      <AppHeader crumbs={[{ label: t.header.settings }]} />
 
-      {/* Main Content */}
-      <main className="p-6 max-w-4xl mx-auto space-y-6">
+      <main className="p-4 sm:p-6 max-w-4xl mx-auto space-y-6">
         {/* Profile Settings */}
         <Card className="bg-[hsl(var(--panel))]">
           <CardHeader className="bg-[hsl(var(--panel))]">

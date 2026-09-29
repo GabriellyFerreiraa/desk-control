@@ -6,7 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ArrowLeft, CheckCircle2, Circle, FileText, Link2, Lock, PartyPopper, Video } from 'lucide-react';
+import { AppHeader } from '@/components/layout/AppHeader';
+import { format } from 'date-fns';
+import { useDateLocale } from '@/i18n/dates';
+import { CheckCircle2, Circle, FileText, Link2, Lock, PartyPopper, Video } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useLang, useT } from '@/i18n/lang';
 import { pickLocalized } from '@/lib/localized';
@@ -22,6 +25,7 @@ const CoursePlayer = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { lang } = useLang();
+  const dateLocale = useDateLocale();
   const t = useT();
   const tl = t.learning;
 
@@ -130,18 +134,17 @@ const CoursePlayer = () => {
   const passedCount = course.modules.filter((m) => m.passed).length;
 
   return <div className="min-h-screen bg-background">
-      <header className="border-b bg-card">
-        <div className="flex h-16 items-center gap-4 px-6 bg-[hsl(var(--panel))]">
-          <Button variant="ghost" size="sm" onClick={backToList}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            {tl.back}
-          </Button>
-          <h1 className="text-xl font-bold truncate">{courseTitle}</h1>
-          {course.completedAt && <Badge variant="success">{tl.status.completed}</Badge>}
-        </div>
-      </header>
+      <AppHeader crumbs={[{ label: t.learning.tab, to: '/dashboard?tab=learning' }, { label: courseTitle }]} />
 
-      <main className="p-6 max-w-6xl mx-auto grid gap-6 md:grid-cols-[280px_1fr]">
+      <div className="mx-auto w-full max-w-6xl px-4 pt-4 sm:px-6 sm:pt-6">
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-2xl font-semibold tracking-tight">{courseTitle}</h1>
+          {course.completedAt && <Badge variant="success">{tl.completedOn(format(new Date(course.completedAt), 'P', { locale: dateLocale }))}</Badge>}
+        </div>
+        {pickLocalized(course.description, lang) && <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{pickLocalized(course.description, lang)}</p>}
+      </div>
+
+      <main className="p-4 sm:p-6 max-w-6xl mx-auto grid gap-6 md:grid-cols-[280px_1fr]">
         {/* Module list */}
         <nav aria-label={courseTitle} className="space-y-2">
           <p className="text-xs text-muted-foreground px-1">{tl.modulesDone(passedCount, course.modules.length)}</p>
@@ -198,7 +201,7 @@ const CoursePlayer = () => {
                   <section className="space-y-3" aria-labelledby="materials-heading">
                     <div>
                       <h2 id="materials-heading" className="text-sm font-semibold">{tl.materials}</h2>
-                      {selected.materials.length > 0 && <p className="text-xs text-muted-foreground">{tl.materialsHint}</p>}
+                      {selected.materials.length > 0 && !selected.passed && <p className="text-xs text-muted-foreground">{tl.materialsHint}</p>}
                     </div>
                     {selected.materials.length === 0 ? (
                       <p className="text-sm text-muted-foreground">{tl.noMaterials}</p>
@@ -253,6 +256,8 @@ const CoursePlayer = () => {
                       moduleId={selected.id}
                       passScore={selected.passScore}
                       locked={pendingMaterials(selected).length > 0}
+                      passed={selected.passed}
+                      bestScore={selected.bestScore}
                       hasNextModule={!!nextModule}
                       onFinished={quizFinished}
                       onNextModule={goToNextModule}

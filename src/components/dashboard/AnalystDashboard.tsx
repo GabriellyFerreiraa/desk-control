@@ -18,6 +18,9 @@ import { useSearchParams } from 'react-router-dom';
 import { useT } from '@/i18n/lang';
 import { parseDay, useDateLocale } from '@/i18n/dates';
 import { absenceStatusVariant, taskStatusVariant } from '@/lib/status';
+import { PRESENCE_DOT, localIsoDay, presenceOf } from './teamStatus';
+import { LoadError } from './LoadError';
+import { Skeleton } from '@/components/ui/skeleton';
 export const AnalystDashboard = () => {
   const {
     userProfile,
@@ -34,13 +37,16 @@ export const AnalystDashboard = () => {
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [showSelfTaskForm, setShowSelfTaskForm] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loaded, setLoaded] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'tasks');
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
   const fetchData = async () => {
     if (!user) return;
     try {
-      const today = new Date().toISOString().split('T')[0];
+      // Local calendar day (toISOString would give tomorrow late in the evening in the Americas).
+      const today = localIsoDay(new Date());
       const [
         { data: absences, error: absencesError },
         { data: userTasks, error: tasksError },
@@ -56,7 +62,7 @@ export const AnalystDashboard = () => {
           ascending: false
         }),
         // All analysts (team) excluding current user
-        supabase.from('profiles').select('*').neq('user_id', user.id),
+        supabase.from('profiles').select('*').neq('user_id', user.id).eq('role', 'analyst').eq('status', 'active').order('name'),
         // Approved absences for today (to exclude from online count)
         supabase.from('absence_requests').select('*').in('status', ['approved', 'cancel_requested']).lte('start_date', today).gte('end_date', today)
       ]);
@@ -68,7 +74,10 @@ export const AnalystDashboard = () => {
       setTasks(userTasks || []);
       setOnlineAnalysts(analysts || []);
       setApprovedAbsences(absencesToday || []);
+      setLoaded(true);
+      setLoadError(false);
     } catch (error) {
+      setLoadError(true);
       console.error('Error fetching data:', error);
       toast({
         title: t.common.error,
@@ -174,22 +183,10 @@ export const AnalystDashboard = () => {
     `${format(parseDay(request.start_date), 'PPP', { locale })} - ${format(parseDay(request.end_date), 'PPP', { locale })}`;
   const dueText = (dueDate: string) => t.tasks.due(format(new Date(dueDate), 'PPp', { locale }));
 
-  const isAnalystOnline = (analyst: any) => {
-    const now = new Date();
-    const today = now.toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase();
-    const todaySchedule = analyst.work_days?.[today];
-    if (!todaySchedule?.active) return false;
-
-    // Exclude analysts with approved absence today
-    const hasAbsenceToday = approvedAbsences.some((a: any) => a.analyst_id === analyst.user_id);
-    if (hasAbsenceToday) return false;
-
-    // Check current time within work hours
-    const currentTime = now.toTimeString().slice(0, 5); // HH:MM
-    const startTime = (analyst.start_time || '09:00').slice(0, 5);
-    const endTime = (analyst.end_time || '18:00').slice(0, 5);
-    return currentTime >= startTime && currentTime <= endTime;
-  };
+  // Same definition of "working" as the supervisor dashboard (teamStatus.ts).
+  const now = new Date();
+  const isAnalystOnline = (analyst: any) => presenceOf(analyst, approvedAbsences, now).presence === 'onShift';
+  const range = (start: string | null, end: string | null) => (start && end ? `${String(start).slice(0, 5)} - ${String(end).slice(0, 5)}` : '-');
 
   const getCurrentShiftInfo = () => {
     if (!userProfile?.work_days) return null;
@@ -216,7 +213,16 @@ export const AnalystDashboard = () => {
   const shiftInfo = getCurrentShiftInfo();
   const onlineNow = onlineAnalysts.filter((a: any) => isAnalystOnline(a));
   if (loading) {
-    return <div className="p-6">{t.dashboard.loading}</div>;
+    return <div className="space-y-6" aria-busy="true" aria-label={t.dashboard.loading}>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
+          {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[92px] rounded-lg" />)}
+        </div>
+        <Skeleton className="h-10 w-full max-w-lg" />
+        <Skeleton className="h-56 w-full rounded-lg" />
+      </div>;
+  }
+  if (loadError && !loaded) {
+    return <LoadError onRetry={() => { setLoading(true); fetchData(); }} />;
   }
   const taskAuthor = (task: any) => task.assigned_by === task.assigned_to ? (
     <Badge variant="outline">{t.tasks.selfAssigned}</Badge>
@@ -229,14 +235,14 @@ export const AnalystDashboard = () => {
   );
   return <div className="space-y-6">
       {/* Quick Stats */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4 pb-1">
             <CardTitle className="text-sm font-medium">{t.dashboard.currentShift}</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="p-4 pt-0">
+            <div className="text-xl font-semibold">
               {shiftInfo?.isWorkDay ? shiftInfo.shift : t.dashboard.dayOff}
             </div>
             {shiftInfo?.isWorkDay && <div className="flex items-center mt-2">
@@ -249,36 +255,36 @@ export const AnalystDashboard = () => {
         </Card>
 
         <Card onClick={() => setActiveTab('tasks')} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setActiveTab('tasks')} tabIndex={0} className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4 pb-1">
             <CardTitle className="text-sm font-medium">{t.dashboard.pendingTasks}</CardTitle>
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${tasks.filter(task => task.status !== 'completed').length > 0 ? 'text-status-pending-fg' : ''}`}>
+          <CardContent className="p-4 pt-0">
+            <div className={`text-2xl font-semibold ${tasks.filter(task => task.status !== 'completed').length > 0 ? 'text-status-pending-fg' : ''}`}>
               {tasks.filter(task => task.status !== 'completed').length}
             </div>
           </CardContent>
         </Card>
 
         <Card onClick={() => setActiveTab('absences')} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setActiveTab('absences')} tabIndex={0} className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t.dashboard.pendingRequests}</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4 pb-1">
+            <CardTitle className="text-sm font-medium">{t.dashboard.myPendingRequests}</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${absenceRequests.filter(req => req.status === 'pending').length > 0 ? 'text-status-danger-fg' : ''}`}>
+          <CardContent className="p-4 pt-0">
+            <div className={`text-2xl font-semibold ${absenceRequests.filter(req => req.status === 'pending').length > 0 ? 'text-status-danger-fg' : ''}`}>
               {absenceRequests.filter(req => req.status === 'pending').length}
             </div>
           </CardContent>
         </Card>
 
         <Card onClick={() => setActiveTab('team')} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setActiveTab('team')} tabIndex={0} className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t.dashboard.onlineAnalysts}</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4 pb-1">
+            <CardTitle className="text-sm font-medium">{t.dashboard.onShiftNow}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${onlineNow.length > 0 ? 'text-status-success-fg' : ''}`}>{onlineNow.length}</div>
+          <CardContent className="p-4 pt-0">
+            <div className={`text-2xl font-semibold ${onlineNow.length > 0 ? 'text-status-success-fg' : ''}`}>{onlineNow.length}</div>
           </CardContent>
         </Card>
       </div>
@@ -408,25 +414,25 @@ export const AnalystDashboard = () => {
                   {t.team.noOthers}
                 </p> : <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {onlineAnalysts.map((analyst) => {
-                    const isOnline = onlineNow.includes(analyst);
+                    const info = presenceOf(analyst, approvedAbsences, now);
                     const today = new Date().toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase();
                     const todaySchedule = analyst.work_days?.[today];
                     return (
                       <div key={analyst.id} className="p-4 border rounded-lg bg-[hsl(var(--panel))]">
                         <div className="flex items-center gap-3 mb-2">
-                          <div className={`h-3 w-3 rounded-full ring-2 ring-background ${isOnline ? 'bg-status-success' : 'bg-status-neutral/50'}`} />
+                          <div className={`h-2.5 w-2.5 rounded-full ${PRESENCE_DOT[info.presence]}`} aria-hidden />
                           <UserAvatar src={analyst.avatar_url} name={analyst.name} size="sm" />
                           <div>
                             <p className="font-medium">{analyst.name}</p>
-                            <p className="text-xs text-muted-foreground">{(t.roles as Record<string, string>)[analyst.role] ?? analyst.role}</p>
+                            <p className="text-xs text-muted-foreground">{t.supervisor.presence[info.presence]}</p>
                           </div>
                         </div>
                         {todaySchedule?.active ? (
                           <div className="text-xs text-muted-foreground">
                             <p>{t.team.schedule}: {String(analyst.start_time).slice(0,5)} - {String(analyst.end_time).slice(0,5)}</p>
-                            <p>{t.team.lunch}: {analyst.lunch_start ? String(analyst.lunch_start).slice(0,5) : '-'}</p>
-                            <p>{t.team.break1}: {analyst.break1_start ? String(analyst.break1_start).slice(0,5) : '-'}</p>
-                            <p>{t.team.break2}: {analyst.break2_start ? String(analyst.break2_start).slice(0,5) : '-'}</p>
+                            <p>{t.team.lunch}: {range(analyst.lunch_start, analyst.lunch_end)}</p>
+                            <p>{t.team.break1}: {range(analyst.break1_start, analyst.break1_end)}</p>
+                            <p>{t.team.break2}: {range(analyst.break2_start, analyst.break2_end)}</p>
                           </div>
                         ) : (
                           <div className="text-xs text-muted-foreground">{t.team.notScheduled}</div>

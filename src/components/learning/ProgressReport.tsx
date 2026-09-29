@@ -16,6 +16,8 @@ import { Localized, asLocalized, pickLocalized } from '@/lib/localized';
 import { ExportCell, ExportColumn, downloadCsv, downloadXlsx } from '@/lib/exportTable';
 import type { CourseStatus } from './learningData';
 import { courseProgressVariant } from '@/lib/status';
+import { useDateLocale } from '@/i18n/dates';
+import type { Locale } from 'date-fns';
 
 interface ReportRow {
   analystId: string;
@@ -39,10 +41,11 @@ const ALL = 'all';
 const STATUSES: CourseStatus[] = ['notStarted', 'inProgress', 'completed'];
 
 const localDay = (iso: string) => format(new Date(iso), 'yyyy-MM-dd');
-const shortDate = (iso: string | null) => (iso ? format(new Date(iso), 'dd/MM/yyyy') : '');
+const shortDate = (iso: string | null, locale: Locale) => (iso ? format(new Date(iso), 'P', { locale }) : '');
 
 export const ProgressReport = () => {
   const t = useT();
+  const dateLocale = useDateLocale();
   const { lang } = useLang();
   const tp = t.progress;
   const [rows, setRows] = useState<ReportRow[]>([]);
@@ -278,7 +281,7 @@ export const ProgressReport = () => {
                     </TableCell>
                     <TableCell className="text-right tabular-nums">{r.totalAttempts}</TableCell>
                     <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{attemptsText(r)}</TableCell>
-                    <TableCell className="whitespace-nowrap">{shortDate(r.completedAt)}</TableCell>
+                    <TableCell className="whitespace-nowrap">{shortDate(r.completedAt, dateLocale)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

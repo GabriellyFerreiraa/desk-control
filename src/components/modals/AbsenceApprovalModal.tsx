@@ -47,7 +47,7 @@ export const AbsenceApprovalModal = ({
     return diffDays;
   };
   return <Dialog open onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg bg-[hsl(var(--panel))]">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
@@ -105,13 +105,13 @@ export const AbsenceApprovalModal = ({
           {/* Comment Section */}
           <div className="space-y-2">
             <Label htmlFor="comment">
-              {ta.comment} {action === 'reject' && <span className="text-destructive">*</span>}
+              {ta.comment} <span className="text-xs font-normal text-muted-foreground">({ta.commentRequiredToReject})</span>
             </Label>
             <Textarea id="comment" placeholder={action === 'approve' ? ta.placeholderApprove : action === 'reject' ? ta.placeholderReject : ta.placeholderDefault} value={comment} onChange={e => setComment(e.target.value)} rows={3} />
           </div>
           
           {/* Action Buttons */}
-          <div className="flex justify-end gap-2 pt-4">
+          <div className="flex flex-wrap justify-end gap-2 pt-4">
             <Button variant="outline" onClick={onClose}>
               {t.common.cancel}
             </Button>

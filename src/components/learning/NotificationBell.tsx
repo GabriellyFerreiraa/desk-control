@@ -104,7 +104,7 @@ export const NotificationBell = () => {
             </span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-0 bg-[hsl(var(--panel))]">
+      <PopoverContent align="end" collisionPadding={12} className="w-[min(20rem,calc(100vw-1.5rem))] p-0">
         <div className="flex items-center justify-between px-4 py-3 border-b">
           <p className="text-sm font-semibold">{tn.title}</p>
           {unread > 0 && <Button variant="ghost" size="sm" className="h-auto px-2 py-1 text-xs" onClick={markAllRead}>

@@ -12,6 +12,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { UserAvatar } from '@/components/UserAvatar';
 import { toast } from '@/hooks/use-toast';
 import { useT } from '@/i18n/lang';
+import { useDateLocale } from '@/i18n/dates';
 import { userStatusVariant } from '@/lib/status';
 
 type AdminUser = Database['public']['Functions']['admin_list_users']['Returns'][number];
@@ -27,6 +28,7 @@ const NO_PROJECT = 'none';
 export const UsersPanel = () => {
   const { user, refreshProfile } = useAuth();
   const t = useT();
+  const dateLocale = useDateLocale();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -195,7 +197,7 @@ export const UsersPanel = () => {
                         </Select>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-                        {format(new Date(u.created_at), 'dd/MM/yyyy')}
+                        {format(new Date(u.created_at), 'P', { locale: dateLocale })}
                       </TableCell>
                     </TableRow>;
                 })}
