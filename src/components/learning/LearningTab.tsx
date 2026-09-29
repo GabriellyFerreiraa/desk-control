@@ -11,12 +11,7 @@ import { toast } from '@/hooks/use-toast';
 import { useLang, useT } from '@/i18n/lang';
 import { pickLocalized } from '@/lib/localized';
 import { CourseStatus, CourseSummary, loadMyCourses } from './learningData';
-
-const STATUS_BADGE: Record<CourseStatus, 'outline' | 'secondary' | 'default'> = {
-  notStarted: 'outline',
-  inProgress: 'secondary',
-  completed: 'default',
-};
+import { courseProgressVariant } from '@/lib/status';
 
 export const LearningTab = () => {
   const { user } = useAuth();
@@ -66,7 +61,7 @@ export const LearningTab = () => {
                   <CardHeader className="space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <CardTitle className="text-base leading-snug">{pickLocalized(course.title, lang)}</CardTitle>
-                      <Badge variant={STATUS_BADGE[course.status]} className="shrink-0">{tl.status[course.status]}</Badge>
+                      <Badge variant={courseProgressVariant(course.status)} className="shrink-0">{tl.status[course.status]}</Badge>
                     </div>
                     {description && <CardDescription className="line-clamp-3">{description}</CardDescription>}
                   </CardHeader>

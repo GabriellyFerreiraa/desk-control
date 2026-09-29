@@ -183,7 +183,7 @@ export const ModuleEditor = ({ courseId, module, index, total, onMove, onChanged
                             onClick={() => openVersion(material, version)}
                             title={`${tc.open} (${version.language.toUpperCase()})`}
                           >
-                            <Badge variant="secondary" className="hover:bg-primary hover:text-primary-foreground">
+                            <Badge variant="outline" className="hover:border-primary hover:text-foreground">
                               {version.language.toUpperCase()}
                             </Badge>
                           </button>

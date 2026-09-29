@@ -81,9 +81,9 @@ export const QuizRunner = ({ moduleId, passScore, locked, hasNextModule, onFinis
 
   if (phase === 'result' && result) {
     const Icon = result.passed ? CheckCircle2 : XCircle;
-    return <div className={`rounded-md border p-4 space-y-3 ${result.passed ? 'border-[hsl(var(--success))]' : 'border-destructive'}`} role="status">
+    return <div className={`rounded-md border p-4 space-y-3 ${result.passed ? 'border-status-success/40 bg-status-success/5' : 'border-status-danger/40 bg-status-danger/5'}`} role="status">
         <div className="flex items-center gap-2">
-          <Icon className={`h-5 w-5 ${result.passed ? 'text-[hsl(var(--success))]' : 'text-destructive'}`} />
+          <Icon className={`h-5 w-5 ${result.passed ? 'text-status-success-fg' : 'text-status-danger-fg'}`} />
           <p className="font-semibold">{result.passed ? tl.resultPassed : tl.resultFailed}</p>
         </div>
         <p className="text-sm">{tl.yourScore(result.score)}</p>

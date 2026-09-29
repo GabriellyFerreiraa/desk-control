@@ -9,6 +9,7 @@ import { format } from 'date-fns';
 import { useT } from '@/i18n/lang';
 import { parseDay, useDateLocale } from '@/i18n/dates';
 import { toast } from '@/hooks/use-toast';
+import { absenceStatusVariant } from '@/lib/status';
 import { CheckCircle, XCircle, Calendar, User } from 'lucide-react';
 interface AbsenceApprovalModalProps {
   request: any;
@@ -63,7 +64,7 @@ export const AbsenceApprovalModal = ({
             <div className="flex items-center gap-2">
               <UserAvatar src={request.analyst_profile?.avatar_url} name={request.analyst_profile?.name} size="xs" />
               <span className="font-medium">{request.analyst_profile?.name}</span>
-              <Badge variant="secondary">{isCancel ? t.absences.status.cancel_requested : t.absences.status.pending}</Badge>
+              <Badge variant={absenceStatusVariant(request.status)}>{isCancel ? t.absences.status.cancel_requested : t.absences.status.pending}</Badge>
             </div>
             
             <div className="grid grid-cols-2 gap-4 text-sm">

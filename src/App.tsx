@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -81,6 +82,11 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
 const ThemedWrapper = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const isPublic = location.pathname === '/' || location.pathname === '/auth';
+  // Menus and popovers render in a portal under <body>, outside this wrapper,
+  // so the forced light palette has to be on <body> too.
+  useEffect(() => {
+    document.body.classList.toggle('force-light', isPublic);
+  }, [isPublic]);
   return (
     <div className={`${isPublic ? 'landing-theme force-light ' : ''}min-h-screen relative`}>
       {children}

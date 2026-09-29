@@ -2,112 +2,141 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-Design direction: Supabase-inspired, clean surfaces, subtle borders, emerald accent.
+/* Design system tokens. All colors are HSL channels.
+   Direction: calm workspace. Tinted page background, white cards, one brand
+   color (emerald) for primary actions and selection only, neutral hover, and
+   a separate status palette with a soft background + readable text per theme.
+
+   Status tokens come in pairs:
+     --status-X     base hue, used as a tinted background (e.g. bg-status-X/15)
+                    and for small marks (dots, bars, borders)
+     --status-X-fg  text on that tinted background or on cards (>= 4.5:1)
 */
 
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 9%;
+  :root, .force-light {
+    --background: 220 20% 97%;
+    --foreground: 222 22% 11%;
 
-    --card: 0 0% 98%;
-    --card-foreground: 0 0% 9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 22% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 9%;
+    --popover-foreground: 222 22% 11%;
 
-    --primary: 160 84% 39%;
+    /* emerald-700: white text on it is 5.5:1 */
+    --primary: 163 94% 24%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 9%;
+    --secondary: 220 14% 94%;
+    --secondary-foreground: 222 22% 11%;
 
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
+    --muted: 220 14% 95%;
+    --muted-foreground: 220 9% 40%;
 
-    --accent: 160 84% 39%;
-    --accent-foreground: 0 0% 100%;
+    /* Neutral: hover, highlighted menu items, toggles. Never the brand color. */
+    --accent: 220 14% 93%;
+    --accent-foreground: 222 22% 11%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* red-600: white text on it is 4.8:1 */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --success: 160 84% 39%;
+    --success: 142 71% 40%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 28 90% 55%;
-    --warning-foreground: 210 40% 98%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 26 83% 14%;
 
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 160 84% 39%;
+    --status-pending: 38 92% 50%;
+    --status-pending-fg: 26 90% 30%;
+    --status-success: 142 71% 45%;
+    --status-success-fg: 143 64% 24%;
+    --status-danger: 0 84% 60%;
+    --status-danger-fg: 0 70% 38%;
+    --status-info: 217 91% 60%;
+    --status-info-fg: 224 76% 40%;
+    --status-neutral: 220 9% 46%;
+    --status-neutral-fg: 220 13% 32%;
+
+    --border: 220 13% 89%;
+    --input: 220 13% 86%;
+    --ring: 163 94% 24%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 0 0% 30%;
-    --sidebar-primary: 160 84% 39%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 13% 30%;
+    --sidebar-primary: 163 94% 24%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 0 0% 9%;
-    --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 160 84% 39%;
+    --sidebar-accent: 220 14% 94%;
+    --sidebar-accent-foreground: 222 22% 11%;
+    --sidebar-border: 220 13% 89%;
+    --sidebar-ring: 163 94% 24%;
 
-    /* Surface for navbars/cards */
-    --panel: 0 0% 98%;
-    /* Form field surface token */
+    /* Kept for existing markup: same as a card surface, so items inside a
+       card read as flat rows separated by borders, not as nested boxes. */
+    --panel: 0 0% 100%;
     --field: 0 0% 100%;
   }
 
   .dark, .force-dark {
-    --background: 0 0% 9%;
-    --foreground: 0 0% 96%;
+    --background: 222 14% 7%;
+    --foreground: 220 14% 94%;
 
-    --card: 0 0% 12%;
-    --card-foreground: 0 0% 96%;
+    --card: 222 12% 11%;
+    --card-foreground: 220 14% 94%;
 
-    --popover: 0 0% 12%;
-    --popover-foreground: 0 0% 96%;
+    --popover: 222 12% 13%;
+    --popover-foreground: 220 14% 94%;
 
     --primary: 158 64% 52%;
     --primary-foreground: 160 84% 10%;
 
-    --secondary: 0 0% 16%;
-    --secondary-foreground: 0 0% 96%;
+    --secondary: 222 10% 17%;
+    --secondary-foreground: 220 14% 94%;
 
-    --muted: 0 0% 16%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 222 10% 15%;
+    --muted-foreground: 220 9% 66%;
 
-    --accent: 158 64% 52%;
-    --accent-foreground: 160 84% 10%;
+    --accent: 222 10% 19%;
+    --accent-foreground: 220 14% 94%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --success: 158 64% 52%;
-    --success-foreground: 160 84% 10%;
+    --success: 142 69% 45%;
+    --success-foreground: 144 80% 8%;
 
-    --warning: 28 90% 55%;
-    --warning-foreground: 210 40% 98%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 26 83% 14%;
 
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
+    --status-pending: 38 92% 50%;
+    --status-pending-fg: 43 96% 64%;
+    --status-success: 142 71% 45%;
+    --status-success-fg: 142 69% 60%;
+    --status-danger: 0 84% 60%;
+    --status-danger-fg: 0 91% 73%;
+    --status-info: 217 91% 60%;
+    --status-info-fg: 213 94% 72%;
+    --status-neutral: 220 9% 55%;
+    --status-neutral-fg: 220 9% 72%;
+
+    --border: 222 10% 20%;
+    --input: 222 10% 24%;
     --ring: 158 64% 52%;
 
-    --sidebar-background: 0 0% 11%;
-    --sidebar-foreground: 0 0% 90%;
+    --sidebar-background: 222 12% 10%;
+    --sidebar-foreground: 220 9% 80%;
     --sidebar-primary: 158 64% 52%;
     --sidebar-primary-foreground: 160 84% 10%;
-    --sidebar-accent: 0 0% 16%;
-    --sidebar-accent-foreground: 0 0% 96%;
-    --sidebar-border: 0 0% 18%;
+    --sidebar-accent: 222 10% 17%;
+    --sidebar-accent-foreground: 220 14% 94%;
+    --sidebar-border: 222 10% 20%;
     --sidebar-ring: 158 64% 52%;
 
-    /* Panel surface for dark theme */
-    --panel: 0 0% 12%;
-    /* Form field surface for dark theme */
-    --field: 0 0% 15%;
+    --panel: 222 12% 11%;
+    --field: 222 12% 14%;
   }
 }
 
@@ -116,51 +145,53 @@ Design direction: Supabase-inspired, clean surfaces, subtle borders, emerald acc
     @apply border-border;
   }
 
-  body {
-    @apply bg-background text-foreground;
+  html {
+    /* Reserve the scrollbar gutter so switching tabs doesn't shift the layout. */
+    scrollbar-gutter: stable;
   }
 
-  /* Clean landing/auth surface: flat background, one soft accent glow, no animation */
+  body {
+    @apply bg-background text-foreground antialiased;
+    /* Inter: tabular figures keep times, counts and dates aligned. */
+    font-feature-settings: "cv11", "tnum";
+  }
+
+  /* Clean landing/auth surface: flat background, one soft accent glow that
+     fades out before the next section (no hard edge). */
   .landing-theme {
-    background-image: radial-gradient(900px 500px at 50% 0%, hsl(var(--primary) / 0.06), transparent 60%);
+    background-image: radial-gradient(900px 500px at 50% 0%, hsl(var(--primary) / 0.07), transparent 70%);
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
   }
+}
 
-  /* Forces the light palette regardless of the global dark mode setting.
-     Used on public pages (login, sign up, home) that should always look light,
-     even while the Dashboard itself is in dark mode. */
-  .force-light {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 9%;
-    --card: 0 0% 98%;
-    --card-foreground: 0 0% 9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 9%;
-    --primary: 160 84% 39%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
-    --accent: 160 84% 39%;
-    --accent-foreground: 0 0% 100%;
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 160 84% 39%;
-    --panel: 0 0% 98%;
-    --field: 0 0% 100%;
+/* Calendar: days with absences get a small dot instead of a colored fill, so
+   "today" (ring) and "selected" (filled) stay readable on every day. */
+@layer components {
+  .day-has-absence {
+    position: relative;
+  }
+  .day-has-absence::after {
+    content: "";
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 5px;
+    height: 5px;
+    border-radius: 9999px;
+    background: hsl(var(--status-pending));
   }
 }
 
 /* Global Scrollbar Styling (uses semantic HSL tokens) */
 @layer base {
   /* Firefox */
-  * { scrollbar-width: thin; scrollbar-color: hsl(var(--muted-foreground) / 0.5) hsl(var(--secondary)); }
+  * { scrollbar-width: thin; scrollbar-color: hsl(var(--muted-foreground) / 0.4) transparent; }
 
   /* WebKit */
   ::-webkit-scrollbar { width: 10px; height: 10px; }
-  ::-webkit-scrollbar-track { background: hsl(var(--secondary)); }
-  ::-webkit-scrollbar-thumb { background-color: hsl(var(--muted-foreground) / 0.5); border-radius: 9999px; border: 2px solid hsl(var(--secondary)); }
-  ::-webkit-scrollbar-thumb:hover { background-color: hsl(var(--muted-foreground) / 0.7); }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background-color: hsl(var(--muted-foreground) / 0.35); border-radius: 9999px; border: 2px solid hsl(var(--background)); }
+  ::-webkit-scrollbar-thumb:hover { background-color: hsl(var(--muted-foreground) / 0.6); }
 }

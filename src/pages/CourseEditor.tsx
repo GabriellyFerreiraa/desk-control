@@ -15,6 +15,7 @@ import { Localized, cleanLocalized, pickLocalized, sameLocalized } from '@/lib/l
 import { LocalizedFields } from '@/components/admin/course/LocalizedFields';
 import { ModuleEditor } from '@/components/admin/course/ModuleEditor';
 import { CourseTree, getPublishProblems, loadCourseTree, moveId } from '@/components/admin/course/courseTree';
+import { publishedVariant } from '@/lib/status';
 
 interface Project {
   id: string;
@@ -171,7 +172,7 @@ const CourseEditor = () => {
               {tc.backToCourses}
             </Button>
             <h1 className="text-xl font-bold truncate">{courseTitle}</h1>
-            <Badge variant={course.published ? 'default' : 'outline'}>
+            <Badge variant={publishedVariant(course.published)}>
               {course.published ? tc.published : tc.draft}
             </Badge>
           </div>

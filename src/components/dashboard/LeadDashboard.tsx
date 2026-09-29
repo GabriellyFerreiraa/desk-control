@@ -17,6 +17,7 @@ import { UserAvatar } from '@/components/UserAvatar';
 import { ProgressReport } from '@/components/learning/ProgressReport';
 import { useSearchParams } from 'react-router-dom';
 import { useT } from '@/i18n/lang';
+import { absenceStatusVariant, taskStatusVariant } from '@/lib/status';
 import { ConfirmAction } from '@/components/admin/course/ConfirmAction';
 export const LeadDashboard = () => {
   const {
@@ -196,54 +197,14 @@ export const LeadDashboard = () => {
   useEffect(() => {
     fetchData();
   }, [user]);
-  const getTaskStatusBadge = (status: string) => {
-    const statusConfig = {
-      pending: {
-        label: t.tasks.status.pending,
-        variant: 'secondary' as const,
-        className: 'bg-orange-500 text-white'
-      },
-      in_progress: {
-        label: t.tasks.status.in_progress,
-        variant: 'default' as const,
-        className: ''
-      },
-      completed: {
-        label: t.tasks.status.completed,
-        variant: 'success' as const,
-        className: ''
-      }
-    } as const;
-    return (statusConfig as any)[status] || {
-      label: status,
-      variant: 'outline' as const,
-      className: ''
-    };
-  };
-  const getAbsenceStatusBadge = (status: string) => {
-    const statusConfig = {
-      approved: {
-        label: t.absences.status.approved,
-        variant: 'success' as const
-      },
-      rejected: {
-        label: t.absences.status.rejected,
-        variant: 'destructive' as const
-      },
-      cancelled: {
-        label: t.absences.status.cancelled,
-        variant: 'outline' as const
-      },
-      pending: {
-        label: t.absences.status.pending,
-        variant: 'secondary' as const
-      }
-    } as const;
-    return (statusConfig as any)[status] || {
-      label: status,
-      variant: 'outline' as const
-    };
-  };
+  const getTaskStatusBadge = (status: string) => ({
+    label: (t.tasks.status as Record<string, string>)[status] ?? status,
+    variant: taskStatusVariant(status)
+  });
+  const getAbsenceStatusBadge = (status: string) => ({
+    label: (t.absences.status as Record<string, string>)[status] ?? status,
+    variant: absenceStatusVariant(status)
+  });
   const isAnalystOnline = (analyst: any) => {
     const now = new Date();
     const today = now.toLocaleDateString('en-US', {
@@ -280,7 +241,7 @@ export const LeadDashboard = () => {
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${pendingRequests.length > 0 ? 'text-[hsl(var(--destructive))]' : ''}`}>{pendingRequests.length}</div>
+            <div className={`text-2xl font-bold ${pendingRequests.length > 0 ? 'text-status-danger-fg' : ''}`}>{pendingRequests.length}</div>
           </CardContent>
         </Card>
 
@@ -290,7 +251,7 @@ export const LeadDashboard = () => {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${allTasks.filter(task => task.status !== 'completed').length > 0 ? 'text-[hsl(var(--warning))]' : ''}`}>
+            <div className={`text-2xl font-bold ${allTasks.filter(task => task.status !== 'completed').length > 0 ? 'text-status-pending-fg' : ''}`}>
               {allTasks.filter(task => task.status !== 'completed').length}
             </div>
           </CardContent>
@@ -302,7 +263,7 @@ export const LeadDashboard = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${onlineAnalysts.length > 0 ? 'text-[hsl(var(--success))]' : ''}`}>{onlineAnalysts.length}</div>
+            <div className={`text-2xl font-bold ${onlineAnalysts.length > 0 ? 'text-status-success-fg' : ''}`}>{onlineAnalysts.length}</div>
           </CardContent>
         </Card>
 
@@ -319,7 +280,7 @@ export const LeadDashboard = () => {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="flex-wrap h-auto">
+        <TabsList>
           <TabsTrigger value="requests">{t.dashboard.tabs.absences}</TabsTrigger>
           <TabsTrigger value="tasks">{t.dashboard.tabs.taskManagement}</TabsTrigger>
           <TabsTrigger value="team">{t.dashboard.tabs.team}</TabsTrigger>
@@ -354,7 +315,7 @@ export const LeadDashboard = () => {
                           </p>
                           <p className="text-sm mt-1">{request.reason}</p>
                         </div>
-                        <Badge variant="secondary" className="bg-orange-500">{request.status === 'cancel_requested' ? t.absences.status.cancel_requested : t.absences.status.pending}</Badge>
+                        <Badge variant={absenceStatusVariant(request.status)}>{request.status === 'cancel_requested' ? t.absences.status.cancel_requested : t.absences.status.pending}</Badge>
                       </div>
                       <div className="flex gap-2 mt-3">
                         <Button size="sm" onClick={() => setSelectedRequest(request)}>
@@ -397,7 +358,7 @@ export const LeadDashboard = () => {
                           {task.description && <p className="text-sm mt-1">{task.description}</p>}
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge {...getTaskStatusBadge(task.status)}>
+                          <Badge variant={getTaskStatusBadge(task.status).variant}>
                             {getTaskStatusBadge(task.status).label}
                           </Badge>
                           <Badge variant="outline">
@@ -452,7 +413,7 @@ export const LeadDashboard = () => {
                 const todaySchedule = analyst.work_days?.[today];
                 return <div key={analyst.id} className={`group p-5 md:p-6 border rounded-xl bg-card shadow-sm transition-colors hover:border-primary/30 ${!isOnline ? '' : ''}`}>
                        <div className="flex items-center gap-3 mb-4">
-                         <div className={`h-3.5 w-3.5 rounded-full ring-2 ring-background ${isOnline ? 'bg-green-500' : 'bg-muted-foreground/40'}`} />
+                         <div className={`h-3.5 w-3.5 rounded-full ring-2 ring-background ${isOnline ? 'bg-status-success' : 'bg-status-neutral/50'}`} />
                          <div className="flex items-center gap-2">
                            <UserAvatar src={analyst.avatar_url} name={analyst.name} size="sm" />
                            <div>
@@ -512,7 +473,7 @@ export const LeadDashboard = () => {
                             {task.description && <p className="text-sm mt-1">{task.description}</p>}
                           </div>
                           <div className="flex items-center gap-2">
-                            <Badge {...getTaskStatusBadge(task.status)}>
+                            <Badge variant={getTaskStatusBadge(task.status).variant}>
                               {getTaskStatusBadge(task.status).label}
                             </Badge>
                             <Badge variant="outline">
@@ -548,7 +509,7 @@ export const LeadDashboard = () => {
                           </p>
                           <p className="text-sm mt-1">{request.reason}</p>
                         </div>
-                        <Badge {...getAbsenceStatusBadge(request.status)}>
+                        <Badge variant={getAbsenceStatusBadge(request.status).variant}>
                           {getAbsenceStatusBadge(request.status).label}
                         </Badge>
                       </div>

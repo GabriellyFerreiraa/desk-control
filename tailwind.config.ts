@@ -18,7 +18,22 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+			},
 			colors: {
+				status: {
+					pending: 'hsl(var(--status-pending) / <alpha-value>)',
+					'pending-fg': 'hsl(var(--status-pending-fg) / <alpha-value>)',
+					success: 'hsl(var(--status-success) / <alpha-value>)',
+					'success-fg': 'hsl(var(--status-success-fg) / <alpha-value>)',
+					danger: 'hsl(var(--status-danger) / <alpha-value>)',
+					'danger-fg': 'hsl(var(--status-danger-fg) / <alpha-value>)',
+					info: 'hsl(var(--status-info) / <alpha-value>)',
+					'info-fg': 'hsl(var(--status-info-fg) / <alpha-value>)',
+					neutral: 'hsl(var(--status-neutral) / <alpha-value>)',
+					'neutral-fg': 'hsl(var(--status-neutral-fg) / <alpha-value>)',
+				},
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',

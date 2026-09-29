@@ -15,6 +15,7 @@ import { useLang, useT } from '@/i18n/lang';
 import { Localized, asLocalized, pickLocalized } from '@/lib/localized';
 import { ExportCell, ExportColumn, downloadCsv, downloadXlsx } from '@/lib/exportTable';
 import type { CourseStatus } from './learningData';
+import { courseProgressVariant } from '@/lib/status';
 
 interface ReportRow {
   analystId: string;
@@ -36,11 +37,6 @@ interface ReportRow {
 
 const ALL = 'all';
 const STATUSES: CourseStatus[] = ['notStarted', 'inProgress', 'completed'];
-const STATUS_BADGE: Record<CourseStatus, 'outline' | 'secondary' | 'default'> = {
-  notStarted: 'outline',
-  inProgress: 'secondary',
-  completed: 'default',
-};
 
 const localDay = (iso: string) => format(new Date(iso), 'yyyy-MM-dd');
 const shortDate = (iso: string | null) => (iso ? format(new Date(iso), 'dd/MM/yyyy') : '');
@@ -272,7 +268,7 @@ export const ProgressReport = () => {
                     <TableCell className="font-medium whitespace-nowrap">{r.analystName}</TableCell>
                     <TableCell className="whitespace-nowrap">{r.projectName}</TableCell>
                     <TableCell className="min-w-[160px]">{pickLocalized(r.courseTitle, lang)}</TableCell>
-                    <TableCell><Badge variant={STATUS_BADGE[r.status]} className="whitespace-nowrap">{t.learning.status[r.status]}</Badge></TableCell>
+                    <TableCell><Badge variant={courseProgressVariant(r.status)}>{t.learning.status[r.status]}</Badge></TableCell>
                     <TableCell className="whitespace-nowrap">{currentModuleText(r)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2 min-w-[120px]">

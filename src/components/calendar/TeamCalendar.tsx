@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { format, isSameDay, parseISO, getDay } from 'date-fns';
+import { format, isToday, parseISO, getDay } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { MapPin, Clock, User } from 'lucide-react';
+import { Building2, Home, User } from 'lucide-react';
 import { UserAvatar } from '@/components/UserAvatar';
 import { useT } from '@/i18n/lang';
 import { useDateLocale } from '@/i18n/dates';
@@ -49,11 +48,6 @@ export const TeamCalendar = ({
   const [analysts, setAnalysts] = useState<Analyst[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Generate colors for analysts
-  const analystColors = ['hsl(var(--primary))', 'hsl(220, 70%, 50%)', 'hsl(270, 70%, 50%)', 'hsl(120, 70%, 45%)', 'hsl(30, 70%, 50%)', 'hsl(300, 70%, 50%)', 'hsl(200, 70%, 50%)', 'hsl(340, 70%, 50%)'];
-  const getAnalystColor = (analystId: string, index: number) => {
-    return analystColors[index % analystColors.length];
-  };
   const fetchData = async () => {
     if (!user) return;
     try {
@@ -134,19 +128,16 @@ export const TeamCalendar = ({
   const formatWorkMode = (mode: string) => {
     return mode === 'home' ? t.workMode.homeLong : t.workMode.office;
   };
-  const getWorkModeIcon = (mode: string) => {
-    return mode === 'home' ? '🏠' : '🏢';
-  };
   const modifiers = {
     hasAbsence: (date: Date) => getAbsencesForDate(date).length > 0
   };
-  const modifiersStyles = {
-    hasAbsence: {
-      backgroundColor: 'hsl(var(--primary) / 0.1)',
-      color: 'hsl(var(--primary))',
-      fontWeight: '600'
-    }
+  // A dot under the day number (see .day-has-absence in index.css), so the
+  // today ring and the selected fill stay visible on days with absences.
+  const modifiersClassNames = {
+    hasAbsence: 'day-has-absence'
   };
+  const selectedIsToday = isToday(selectedDate);
+  const shortDate = format(selectedDate, 'EEE d MMM', { locale });
   if (loading) {
     return <Card className={className}>
         <CardHeader>
@@ -167,71 +158,61 @@ export const TeamCalendar = ({
         <div className="grid lg:grid-cols-3 gap-4">
           {/* Calendar */}
           <div className="flex justify-center">
-            <Calendar mode="single" selected={selectedDate} onSelect={date => date && setSelectedDate(date)} modifiers={modifiers} modifiersStyles={modifiersStyles} locale={locale} className={cn("p-3 pointer-events-auto border rounded-md")} />
+            <div className="space-y-2">
+              <Calendar mode="single" selected={selectedDate} onSelect={date => date && setSelectedDate(date)} modifiers={modifiers} modifiersClassNames={modifiersClassNames} locale={locale} className={cn("p-3 pointer-events-auto border rounded-md")} />
+              <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5"><span className="h-3.5 w-3.5 rounded-sm ring-1 ring-inset ring-primary" aria-hidden />{t.calendar.legendToday}</span>
+                <span className="inline-flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-status-pending" aria-hidden />{t.calendar.legendAbsence}</span>
+              </div>
+            </div>
           </div>
 
           {/* Analysts Working Today */}
           <div className="space-y-3">
-            <h3 className="font-medium flex items-center gap-2">
-              <User className="h-4 w-4" />
-              {t.calendar.workingToday}
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <User className="h-4 w-4 text-muted-foreground" />
+              {selectedIsToday ? t.calendar.workingToday : t.calendar.workingOn(shortDate)}
+              <span className="ml-auto text-xs font-normal text-muted-foreground">{getWorkingAnalysts(selectedDate).length}</span>
             </h3>
-            <p className="text-xs text-muted-foreground">
-              {format(selectedDate, 'PPPP', { locale })}
-            </p>
             
             {getWorkingAnalysts(selectedDate).length === 0 ? <p className="text-sm text-muted-foreground">
                 {t.calendar.noneWorking}
-              </p> : <div className="space-y-2 max-h-64 overflow-y-auto">
-                {getWorkingAnalysts(selectedDate).map((analyst, index) => {
+              </p> : <ul className="divide-y rounded-md border">
+                {getWorkingAnalysts(selectedDate).map((analyst) => {
               const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
               const dayName = dayNames[getDay(selectedDate)];
               const workDay = analyst.work_days && typeof analyst.work_days === 'object' ? analyst.work_days[dayName] : null;
-              const color = getAnalystColor(analyst.user_id, index);
-              return <div key={analyst.id} className="p-3 rounded-lg border space-y-2 bg-[hsl(var(--panel))]">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <UserAvatar src={analyst.avatar_url as any} name={analyst.name} size="xs" />
-                          <p className="font-medium text-sm" style={{ color }}>
-                            {analyst.name}
-                          </p>
-                        </div>
-                        <Badge variant="outline" className="text-xs">
-                          {(t.roles as Record<string, string>)[analyst.role] ?? analyst.role}
-                        </Badge>
+              const mode = workDay?.mode || 'office';
+              const ModeIcon = mode === 'home' ? Home : Building2;
+              return <li key={analyst.id} className="flex items-center gap-3 px-3 py-2">
+                      <UserAvatar src={analyst.avatar_url as any} name={analyst.name} size="xs" />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{analyst.name}</p>
+                        <p className="text-xs text-muted-foreground">{(t.roles as Record<string, string>)[analyst.role] ?? analyst.role}</p>
                       </div>
-                      
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        <span>{analyst.start_time?.substring(0, 5)} - {analyst.end_time?.substring(0, 5)}</span>
+                      <div className="text-right text-xs text-muted-foreground">
+                        <p className="text-foreground">{analyst.start_time?.substring(0, 5)} - {analyst.end_time?.substring(0, 5)}</p>
+                        <p className="inline-flex items-center gap-1"><ModeIcon className="h-3 w-3" aria-hidden />{formatWorkMode(mode)}</p>
                       </div>
-                      
-                      <div className="flex items-center gap-1 text-xs">
-                        <MapPin className="h-3 w-3" />
-                        <span className="text-muted-foreground">
-                          {getWorkModeIcon(workDay?.mode || 'office')} {formatWorkMode(workDay?.mode || 'office')}
-                        </span>
-                      </div>
-                    </div>;
+                    </li>;
             })}
-              </div>}
+              </ul>}
           </div>
 
           {/* Absences Today */}
           <div className="space-y-3">
-            <h3 className="font-medium">
-              {t.calendar.absencesToday}
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-status-pending" aria-hidden />
+              {selectedIsToday ? t.calendar.absencesToday : t.calendar.absencesOn(shortDate)}
+              <span className="ml-auto text-xs font-normal text-muted-foreground">{getSelectedDateAbsences().length}</span>
             </h3>
             
             {getSelectedDateAbsences().length === 0 ? <p className="text-sm text-muted-foreground">
                 {t.calendar.noAbsences}
-              </p> : <div className="space-y-2 max-h-64 overflow-y-auto">
-                {getSelectedDateAbsences().map((request, index) => {
+              </p> : <ul className="space-y-2">
+                {getSelectedDateAbsences().map((request) => {
               const displayInfo = formatAbsenceDisplay(request);
-              const color = getAnalystColor(request.analyst_id, index);
-              return <div key={request.id} style={{
-                borderLeftColor: color
-              }} className="p-2 rounded-md border-l-4 bg-[hsl(var(--panel))]">
+              return <li key={request.id} className="rounded-md border border-l-2 border-l-status-pending px-3 py-2">
                       <div className="flex items-center gap-2">
                         <UserAvatar src={request.analyst_profile?.avatar_url as any} name={displayInfo.title} size="xs" />
                         <p className="text-sm font-medium">
@@ -242,11 +223,11 @@ export const TeamCalendar = ({
                         {displayInfo.subtitle}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {format(parseISO(request.start_date), 'PP', { locale })} - {format(parseISO(request.end_date), 'PP', { locale })}
+                        {format(parseISO(request.start_date), 'd MMM', { locale })} - {format(parseISO(request.end_date), 'd MMM', { locale })}
                       </p>
-                    </div>;
+                    </li>;
             })}
-              </div>}
+              </ul>}
           </div>
         </div>
 

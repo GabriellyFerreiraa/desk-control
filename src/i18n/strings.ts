@@ -360,6 +360,10 @@ const en = {
     noAbsences: 'No absences scheduled for this day',
     dayOff: 'Day OFF',
     analyst: 'Analyst',
+    workingOn: (date: string) => `Working on ${date}`,
+    absencesOn: (date: string) => `Absences on ${date}`,
+    legendToday: 'Today',
+    legendAbsence: 'Absences',
   },
   approval: {
     reviewAbsence: 'Review Absence Request',
@@ -1076,6 +1080,10 @@ const es: Dict = {
     noAbsences: 'No hay ausencias este día',
     dayOff: 'Día libre',
     analyst: 'Analista',
+    workingOn: (date: string) => `Trabajan el ${date}`,
+    absencesOn: (date: string) => `Ausencias del ${date}`,
+    legendToday: 'Hoy',
+    legendAbsence: 'Ausencias',
   },
   approval: {
     reviewAbsence: 'Revisar solicitud de ausencia',
@@ -1789,6 +1797,10 @@ const pt: Dict = {
     noAbsences: 'Não há ausências neste dia',
     dayOff: 'Folga',
     analyst: 'Analista',
+    workingOn: (date: string) => `Trabalham em ${date}`,
+    absencesOn: (date: string) => `Ausências em ${date}`,
+    legendToday: 'Hoje',
+    legendAbsence: 'Ausências',
   },
   approval: {
     reviewAbsence: 'Revisar solicitação de ausência',

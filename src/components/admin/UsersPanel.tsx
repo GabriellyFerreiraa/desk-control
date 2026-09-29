@@ -12,6 +12,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { UserAvatar } from '@/components/UserAvatar';
 import { toast } from '@/hooks/use-toast';
 import { useT } from '@/i18n/lang';
+import { userStatusVariant } from '@/lib/status';
 
 type AdminUser = Database['public']['Functions']['admin_list_users']['Returns'][number];
 type Role = Database['public']['Enums']['app_role'];
@@ -22,12 +23,6 @@ type StatusFilter = Status | 'all';
 const ROLES: Role[] = ['analyst', 'lead', 'admin'];
 const STATUSES: Status[] = ['pending', 'active', 'inactive'];
 const NO_PROJECT = 'none';
-
-const STATUS_BADGE: Record<Status, 'default' | 'secondary' | 'outline'> = {
-  pending: 'default',
-  active: 'secondary',
-  inactive: 'outline',
-};
 
 export const UsersPanel = () => {
   const { user, refreshProfile } = useAuth();
@@ -192,7 +187,7 @@ export const UsersPanel = () => {
                           disabled={isSelf || busy}
                         >
                           <SelectTrigger className="w-32" title={isSelf ? t.admin.users.selfLocked : undefined}>
-                            <Badge variant={STATUS_BADGE[u.status]}>{t.status[u.status]}</Badge>
+                            <Badge variant={userStatusVariant(u.status)}>{t.status[u.status]}</Badge>
                           </SelectTrigger>
                           <SelectContent>
                             {STATUSES.map((s) => <SelectItem key={s} value={s}>{t.status[s]}</SelectItem>)}

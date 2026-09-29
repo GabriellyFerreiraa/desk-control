@@ -17,6 +17,7 @@ import { LearningTab } from '@/components/learning/LearningTab';
 import { useSearchParams } from 'react-router-dom';
 import { useT } from '@/i18n/lang';
 import { parseDay, useDateLocale } from '@/i18n/dates';
+import { absenceStatusVariant, taskStatusVariant } from '@/lib/status';
 export const AnalystDashboard = () => {
   const {
     userProfile,
@@ -161,30 +162,14 @@ export const AnalystDashboard = () => {
   useEffect(() => {
     fetchData();
   }, [user]);
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      pending: 'secondary',
-      approved: 'success',
-      rejected: 'destructive',
-      cancel_requested: 'secondary',
-      cancelled: 'outline'
-    } as const;
-    return {
-      label: (t.absences.status as Record<string, string>)[status] ?? status,
-      variant: (variants as Record<string, 'secondary' | 'success' | 'destructive' | 'outline'>)[status] ?? 'outline' as const
-    };
-  };
-  const getTaskStatusBadge = (status: string) => {
-    const variants = {
-      pending: 'secondary',
-      in_progress: 'default',
-      completed: 'success'
-    } as const;
-    return {
-      label: (t.tasks.status as Record<string, string>)[status] ?? status,
-      variant: (variants as Record<string, 'secondary' | 'default' | 'success'>)[status] ?? 'outline' as const
-    };
-  };
+  const getStatusBadge = (status: string) => ({
+    label: (t.absences.status as Record<string, string>)[status] ?? status,
+    variant: absenceStatusVariant(status)
+  });
+  const getTaskStatusBadge = (status: string) => ({
+    label: (t.tasks.status as Record<string, string>)[status] ?? status,
+    variant: taskStatusVariant(status)
+  });
   const dayRange = (request: { start_date: string; end_date: string }) =>
     `${format(parseDay(request.start_date), 'PPP', { locale })} - ${format(parseDay(request.end_date), 'PPP', { locale })}`;
   const dueText = (dueDate: string) => t.tasks.due(format(new Date(dueDate), 'PPp', { locale }));
@@ -269,7 +254,7 @@ export const AnalystDashboard = () => {
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${tasks.filter(task => task.status !== 'completed').length > 0 ? 'text-[hsl(var(--warning))]' : ''}`}>
+            <div className={`text-2xl font-bold ${tasks.filter(task => task.status !== 'completed').length > 0 ? 'text-status-pending-fg' : ''}`}>
               {tasks.filter(task => task.status !== 'completed').length}
             </div>
           </CardContent>
@@ -281,7 +266,7 @@ export const AnalystDashboard = () => {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${absenceRequests.filter(req => req.status === 'pending').length > 0 ? 'text-[hsl(var(--destructive))]' : ''}`}>
+            <div className={`text-2xl font-bold ${absenceRequests.filter(req => req.status === 'pending').length > 0 ? 'text-status-danger-fg' : ''}`}>
               {absenceRequests.filter(req => req.status === 'pending').length}
             </div>
           </CardContent>
@@ -293,14 +278,14 @@ export const AnalystDashboard = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${onlineNow.length > 0 ? 'text-[hsl(var(--success))]' : ''}`}>{onlineNow.length}</div>
+            <div className={`text-2xl font-bold ${onlineNow.length > 0 ? 'text-status-success-fg' : ''}`}>{onlineNow.length}</div>
           </CardContent>
         </Card>
       </div>
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="flex-wrap h-auto">
+        <TabsList>
           <TabsTrigger value="tasks">{t.dashboard.tabs.myTasks}</TabsTrigger>
           <TabsTrigger value="absences">{t.dashboard.tabs.absences}</TabsTrigger>
           <TabsTrigger value="team">{t.dashboard.tabs.team}</TabsTrigger>
@@ -337,7 +322,7 @@ export const AnalystDashboard = () => {
                                 {task.description}
                               </p>}
                               <div className="flex items-center gap-2 mt-2 flex-wrap">
-                                <Badge className="bg-orange-500">
+                                <Badge variant={getTaskStatusBadge(task.status).variant}>
                                   {getTaskStatusBadge(task.status).label}
                                 </Badge>
                                 {taskAuthor(task)}
@@ -389,7 +374,7 @@ export const AnalystDashboard = () => {
                             <p className="text-sm text-muted-foreground mt-1">{request.reason}</p>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Badge className="bg-orange-500">
+                            <Badge variant={getStatusBadge(request.status).variant}>
                               {getStatusBadge(request.status).label}
                             </Badge>
                           </div>
@@ -429,7 +414,7 @@ export const AnalystDashboard = () => {
                     return (
                       <div key={analyst.id} className="p-4 border rounded-lg bg-[hsl(var(--panel))]">
                         <div className="flex items-center gap-3 mb-2">
-                          <div className={`h-3 w-3 rounded-full ring-2 ring-background ${isOnline ? 'bg-[hsl(var(--success))]' : 'bg-muted'}`} />
+                          <div className={`h-3 w-3 rounded-full ring-2 ring-background ${isOnline ? 'bg-status-success' : 'bg-status-neutral/50'}`} />
                           <UserAvatar src={analyst.avatar_url} name={analyst.name} size="sm" />
                           <div>
                             <p className="font-medium">{analyst.name}</p>
@@ -503,7 +488,7 @@ export const AnalystDashboard = () => {
                                 {getStatusBadge(request.status).label}
                               </Badge>
                               {request.status === 'approved' && (
-                                <Button size="sm" onClick={() => { setSelectedRequestId(request.id); setShowCancelModal(true); }}>
+                                <Button size="sm" variant="outline" onClick={() => { setSelectedRequestId(request.id); setShowCancelModal(true); }}>
                                   {t.absences.requestCancellation}
                                 </Button>
                               )}

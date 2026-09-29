@@ -137,7 +137,7 @@ const CoursePlayer = () => {
             {tl.back}
           </Button>
           <h1 className="text-xl font-bold truncate">{courseTitle}</h1>
-          {course.completedAt && <Badge>{tl.status.completed}</Badge>}
+          {course.completedAt && <Badge variant="success">{tl.status.completed}</Badge>}
         </div>
       </header>
 
@@ -159,7 +159,7 @@ const CoursePlayer = () => {
                     aria-current={active ? 'step' : undefined}
                     className={`w-full flex items-start gap-3 rounded-md p-3 text-left transition-colors ${active ? 'bg-muted' : 'hover:bg-muted/60'}`}
                   >
-                    <Icon className={`h-4 w-4 mt-0.5 shrink-0 ${module.passed ? 'text-[hsl(var(--success))]' : 'text-muted-foreground'}`} />
+                    <Icon className={`h-4 w-4 mt-0.5 shrink-0 ${module.passed ? 'text-status-success-fg' : 'text-muted-foreground'}`} />
                     <span className="min-w-0">
                       <span className="block text-xs text-muted-foreground">
                         {tl.moduleN(index + 1)}
@@ -182,7 +182,7 @@ const CoursePlayer = () => {
               <p className="text-xs text-muted-foreground">{tl.moduleN(selectedIndex + 1)}</p>
               <CardTitle className="flex items-center gap-2">
                 {pickLocalized(selected.title, lang)}
-                {selected.passed && <Badge variant="secondary">{tl.passed}</Badge>}
+                {selected.passed && <Badge variant="success">{tl.passed}</Badge>}
               </CardTitle>
               {pickLocalized(selected.description, lang) && <CardDescription className="whitespace-pre-line">
                   {pickLocalized(selected.description, lang)}
@@ -225,7 +225,7 @@ const CoursePlayer = () => {
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0">
-                                  {material.completed && <CheckCircle2 className="h-4 w-4 text-[hsl(var(--success))]" aria-label={tl.done} />}
+                                  {material.completed && <CheckCircle2 className="h-4 w-4 text-status-success-fg" aria-label={tl.done} />}
                                   <Button size="sm" variant={material.completed ? 'outline' : 'default'} onClick={() => openMaterial(material)} disabled={!version}>
                                     {material.kind === 'video' ? (isVideoOpen ? tl.hideVideo : tl.watch) : tl.open}
                                   </Button>

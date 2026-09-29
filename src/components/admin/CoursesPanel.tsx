@@ -13,6 +13,7 @@ import { useLang, useT } from '@/i18n/lang';
 import { asLocalized, pickLocalized } from '@/lib/localized';
 import { removeMaterialFiles } from '@/lib/learningFiles';
 import { ConfirmAction } from './course/ConfirmAction';
+import { publishedVariant } from '@/lib/status';
 
 interface CourseRow {
   id: string;
@@ -124,7 +125,7 @@ export const CoursesPanel = () => {
                     <div className="space-y-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium">{title}</span>
-                        <Badge variant={course.published ? 'default' : 'outline'}>
+                        <Badge variant={publishedVariant(course.published)}>
                           {course.published ? tc.published : tc.draft}
                         </Badge>
                       </div>

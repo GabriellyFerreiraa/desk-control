@@ -3,22 +3,27 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
+// Status badges use a soft tinted background with a dark (light theme) or
+// light (dark theme) text of the same hue, so they stay readable in both
+// themes. Map domain states to these variants in src/lib/status.ts.
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-medium",
   {
     variants: {
       variant: {
         default:
-          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+          "border-transparent bg-primary text-primary-foreground",
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "border-transparent bg-status-neutral/15 text-status-neutral-fg",
         destructive:
-          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
+          "border-transparent bg-status-danger/15 text-status-danger-fg",
         success:
-          "border-transparent bg-success text-success-foreground hover:bg-success/80",
+          "border-transparent bg-status-success/15 text-status-success-fg",
         warning:
-          "border-transparent bg-[hsl(var(--warning))] text-white hover:bg-[hsl(var(--warning))]/80",
-        outline: "text-foreground",
+          "border-transparent bg-status-pending/15 text-status-pending-fg",
+        info:
+          "border-transparent bg-status-info/15 text-status-info-fg",
+        outline: "text-muted-foreground",
       },
     },
     defaultVariants: {
