@@ -322,10 +322,6 @@ export const LeadDashboard = () => {
         </div>
       </div>
 
-      {/* Always visible and in a fixed spot: planning who is out is a daily task.
-          Variable-height content (tasks, history) goes below it, in tabs. */}
-      <TeamCalendar memberIds={analysts.map((a) => a.user_id)} />
-
       <div ref={tabsRef} className="scroll-mt-4">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
@@ -443,6 +439,9 @@ export const LeadDashboard = () => {
         </TabsContent>
       </Tabs>
       </div>
+
+      {/* Always visible at the end of the page, for planning who is out. */}
+      <TeamCalendar memberIds={analysts.map((a) => a.user_id)} />
 
       {/* Task Assignment Form Modal */}
       {showTaskForm && <TaskAssignmentForm analysts={analysts} onClose={() => setShowTaskForm(false)} onSuccess={() => {
