@@ -33,10 +33,14 @@ interface Analyst {
 }
 interface TeamCalendarProps {
   className?: string;
+  // Limit the calendar to these analysts (a lead's team). All analysts if omitted.
+  memberIds?: string[];
 }
 export const TeamCalendar = ({
-  className
+  className,
+  memberIds
 }: TeamCalendarProps) => {
+  const inScope = (userId: string) => !memberIds || memberIds.includes(userId);
   const {
     user,
     userProfile
@@ -86,7 +90,7 @@ export const TeamCalendar = ({
     };
   }, [user]);
   const getAbsencesForDate = (date: Date) => {
-    return absenceRequests.filter(request => {
+    return absenceRequests.filter(request => inScope(request.analyst_id)).filter(request => {
       const startDate = new Date(request.start_date + 'T00:00:00');
       const endDate = new Date(request.end_date + 'T23:59:59');
       const checkDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -116,7 +120,8 @@ export const TeamCalendar = ({
     const dayName = dayNames[getDay(date)];
     const absentsOnDate = getAbsencesForDate(date);
     const absentAnalystIds = absentsOnDate.map(absence => absence.analyst_id);
-    return analysts.filter(analyst => {
+    // Only analysts count as "working"; leads and admins have their own view.
+    return analysts.filter(analyst => analyst.role === 'analyst' && inScope(analyst.user_id)).filter(analyst => {
       // Check if analyst is not absent on this date
       if (absentAnalystIds.includes(analyst.user_id)) return false;
 

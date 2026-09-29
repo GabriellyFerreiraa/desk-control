@@ -123,7 +123,7 @@ const Dashboard = () => {
       </header>
 
       {/* Main Content */}
-      <main className="p-6">
+      <main className="mx-auto w-full max-w-7xl p-4 sm:p-6">
         {seesLeadView ? <LeadDashboard /> : <AnalystDashboard />}
       </main>
     </div>;
